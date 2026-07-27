@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pinspost - Photo Board</title>
+  <style>
+    :root {
+      --red: #e60023;
+      --red-hover: #ad081b;
+      --bg: #121212;
+      --surface: #1e1e1e;
+      --text: #f1f1f1;
+      --muted: #888888;
+      --radius: 16px;
+      --shadow: 0 8px 24px rgba(0,0,0,0.5);
+      --shadow-hover: 0 12px 32px rgba(0,0,0,0.6);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(18,18,18,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 24px;
+    }
+
+    .logo {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--red);
+      letter-spacing: -0.5px;
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .search-box {
+      flex: 1;
+      max-width: 800px;
+      position: relative;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 12px 16px 12px 40px;
+      border-radius: 999px;
+      border: none;
+      background: var(--surface);
+      color: var(--text);
+      font-size: 16px;
+      outline: none;
+      transition: box-shadow 0.2s;
+    }
+
+    .search-box input::placeholder { color: #888; opacity: 1; }
+
+    .search-box input:focus {
+      box-shadow: 0 0 0 4px rgba(230,0,35,0.25);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 999px;
+      padding: 10px 18px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 15px;
+      transition: transform 0.1s, box-shadow 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn:active { transform: scale(0.96); }
+
+    .btn-primary {
+      background: var(--red);
+      color: #fff;
+    }
+
+    .btn-primary:hover { background: var(--red-hover); }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text);
+    }
+
+    .btn-ghost:hover { background: rgba(255,255,255,0.1); }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      padding: 16px 24px 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .tabs::-webkit-scrollbar { display: none; }
+
+    .tab {
+      padding: 8px 16px;
+      border-radius: 999px;
+      border: none;
+      background: transparent;
+      color: var(--text);
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.2s;
+    }
+
+    .tab:hover { background: rgba(255,255,255,0.08); }
+
+    .tab.active {
+      background: var(--text);
+      color: var(--bg);
+    }
+
+    .masonry {
+      columns: 2;
+      column-gap: 16px;
+      padding: 16px 24px 48px;
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+
+    @media (min-width: 640px) { .masonry { columns: 3; } }
+    @media (min-width: 1024px) { .masonry { columns: 4; } }
+    @media (min-width: 1400px) { .masonry { columns: 5; } }
+
+    .pin {
+      break-inside: avoid;
+      margin-bottom: 16px;
+      position: relative;
+      border-radius: var(--radius);
+      overflow: hidden;
+      cursor: zoom-in;
+      background: var(--surface);
+    }
+
+    .pin .img-wrap {
+      overflow: hidden;
+      border-radius: var(--radius);
+    }
+
+    .pin img {
+      width: 100%;
+      display: block;
+      border-radius: var(--radius);
+      transition: transform 0.3s ease, filter 0.3s;
+    }
+
+    .pin:hover .overlay { opacity: 1; }
+    .pin:hover img {
+      transform: scale(1.03);
+      filter: brightness(0.65);
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.2s;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 14px;
+      border-radius: var(--radius);
+      pointer-events: none;
+    }
+
+    .overlay .top {
+      display: flex;
+      justify-content: flex-end;
+      pointer-events: auto;
+    }
+
+    .overlay .bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      pointer-events: auto;
+      color: #fff;
+      font-weight: 600;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+    }
+
+    .save-btn {
+      background: var(--red);
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      padding: 10px 18px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .save-btn:hover { background: var(--red-hover); }
+
+    .delete-btn {
+      background: rgba(255,255,255,0.12);
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      padding: 8px 14px;
+      cursor: pointer;
+      font-weight: 700;
+      backdrop-filter: blur(4px);
+    }
+    .delete-btn:hover { background: rgba(255,255,255,0.25); }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(6px);
+      z-index: 200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.active { display: flex; }
+
+    .modal {
+      background: var(--surface);
+      border-radius: var(--radius);
+      width: 100%;
+      max-width: 480px;
+      padding: 24px;
+      box-shadow: var(--shadow-hover);
+      max-height: 90vh;
+      overflow-y: auto;
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .modal h2 { margin-bottom: 16px; }
+
+    .form-group { margin-bottom: 14px; }
+
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      font-size: 13px;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      color: var(--muted);
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      border: 2px solid #333333;
+      background: #2a2a2a;
+      color: var(--text);
+      font-size: 15px;
+      outline: none;
+      transition: border-color 0.2s;
+      font-family: inherit;
+    }
+
+    .form-group input::placeholder,
+    .form-group textarea::placeholder { color: #888; opacity: 1; }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: var(--red);
+    }
+
+    .form-group textarea { resize: vertical; min-height: 80px; }
+
+    .drop-zone {
+      border: 2px dashed #444444;
+      border-radius: 12px;
+      padding: 28px 16px;
+      text-align: center;
+      color: #aaaaaa;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+      position: relative;
+      overflow: hidden;
+      background: rgba(255,255,255,0.02);
+    }
+
+    .drop-zone:hover {
+      background: rgba(255,255,255,0.04);
+      border-color: #777777;
+    }
+
+    .drop-zone.dragover {
+      background: rgba(230,0,35,0.08);
+      border-color: var(--red);
+    }
+
+    .drop-zone input[type=file] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .preview {
+      max-height: 180px;
+      max-width: 100%;
+      border-radius: 10px;
+      display: none;
+      margin: 0 auto;
+      object-fit: cover;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+    }
+
+    .count-badge {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--text);
+      color: var(--bg);
+      padding: 10px 18px;
+      border-radius: 999px;
+      font-weight: 700;
+      box-shadow: var(--shadow);
+      z-index: 90;
+      font-size: 13px;
+    }
+
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.95);
+      z-index: 300;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .lightbox.active { display: flex; }
+
+    .lightbox img {
+      max-width: 100%;
+      max-height: 85vh;
+      border-radius: var(--radius);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+    }
+
+    .lightbox .close {
+      position: absolute;
+      top: 20px;
+      right: 24px;
+      background: rgba(255,255,255,0.12);
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      width: 40px;
+      height: 40px;
+      font-size: 22px;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: #777777;
+      margin-top: 6px;
+    }
+  </style>
+
+  <!-- Firebase SDK (compat version - works with plain script tags, no build tools needed) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+  <header>
+    <div class="logo" onclick="filterCategory('All')">Pinspost</div>
+    <div class="search-box">
+      <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input type="text" id="searchInput" placeholder="Search your pins..." />
+    </div>
+    <button class="btn btn-primary" onclick="openModal()">+ Create</button>
+  </header>
+
+  <div class="tabs" id="categoryTabs"></div>
+
+  <div class="masonry" id="masonry"></div>
+
+  <div class="modal-overlay" id="modal" onclick="if(event.target===this) closeModal()">
+    <div class="modal">
+      <h2>Create Pin</h2>
+      <div class="drop-zone" id="dropZone">
+        <input type="file" id="fileInput" accept="image/*" />
+        <p id="dropText">Drag & drop or click to upload an image</p>
+        <img class="preview" id="preview" alt="Preview" />
+      </div>
+      <p class="hint">Photos are visible to everyone who visits this site. Large images are automatically compressed before saving.</p>
+
+      <div class="form-group" style="margin-top:12px;">
+        <label>Or Image URL (Recommended for many photos)</label>
+        <input type="url" id="urlInput" placeholder="https://i.imgur.com/photo.jpg" />
+      </div>
+
+      <div class="form-group">
+        <label>Title</label>
+        <input type="text" id="titleInput" placeholder="Add a title" />
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea id="descInput" placeholder="Say more about this pin"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Category</label>
+        <select id="catInput">
+          <option>Home</option>
+          <option>Fashion</option>
+          <option>Art</option>
+          <option>Travel</option>
+          <option>Food</option>
+          <option>Nature</option>
+          <option>Technology</option>
+ <option>Other</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="savePin()">Save Pin</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="lightbox" id="lightbox" onclick="if(event.target===this || event.target.closest('.close')) closeLightbox()">
+    <button class="close">&times;</button>
+    <img id="lightboxImg" src="" alt="" />
+  </div>
+
+  <div class="count-badge" id="badge">0 Pins</div>
+
+  <script>
+    // ====== Firebase setup ======
+    const firebaseConfig = {
+      apiKey: "AIzaSyACid5zy30JWgJz-5FNDzxyysyqYQUdvu8",
+      authDomain: "pinpost-app.firebaseapp.com",
+      projectId: "pinpost-app",
+      appId: "1:292350218654:web:83574ad58896850a4c068f"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const pinsCollection = db.collection('pins');
+
+    let pins = [];
+    let currentFilter = 'All';
+    let currentSearch = '';
+    const categories = ['All','Home','Fashion','Art','Travel','Food','Nature','Technology','Other'];
+
+    const masonry = document.getElementById('masonry');
+    const modal = document.getElementById('modal');
+    const fileInput = document.getElementById('fileInput');
+    const dropZone = document.getElementById('dropZone');
+    const dropText = document.getElementById('dropText');
+    const preview = document.getElementById('preview');
+    const urlInput = document.getElementById('urlInput');
+    const titleInput = document.getElementById('titleInput');
+    const descInput = document.getElementById('descInput');
+    const catInput = document.getElementById('catInput');
+    const searchInput = document.getElementById('searchInput');
+    const badge = document.getElementById('badge');
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightboxImg');
+
+    renderTabs();
+    renderPins();
+    listenForPins();
+
+    fileInput.addEventListener('change', handleFile);
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      if (e.dataTransfer.files.length) {
+        fileInput.files = e.dataTransfer.files;
+        handleFile();
+      }
+    });
+
+    urlInput.addEventListener('input', () => {
+      const url = urlInput.value.trim();
+      if (url.match(/^https?:\/\/.+/)) {
+        preview.src = url;
+        preview.style.display = 'block';
+        dropText.style.display = 'none';
+      }
+    });
+
+    searchInput.addEventListener('input', e => {
+      currentSearch = e.target.value.toLowerCase();
+      renderPins();
+    });
+
+    function renderTabs() {
+      const tabs = document.getElementById('categoryTabs');
+      tabs.innerHTML = categories.map(c =>
+        `<button class="tab ${c === currentFilter ? 'active' : ''}" onclick="filterCategory('${c}')">${c}</button>`
+      ).join('');
+    }
+
+    function filterCategory(cat) {
+      currentFilter = cat;
+      renderTabs();
+      renderPins();
+    }
+
+    function openModal() {
+      modal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      modal.classList.remove('active');
+      document.body.style.overflow = '';
+      resetForm();
+    }
+
+    function resetForm() {
+      fileInput.value = '';
+      preview.style.display = 'none';
+      preview.src = '';
+      dropText.style.display = 'block';
+      urlInput.value = '';
+      titleInput.value = '';
+      descInput.value = '';
+      catInput.selectedIndex = 0;
+    }
+
+    function handleFile() {
+      const file = fileInput.files[0];
+      if (!file) return;
+      const url = URL.createObjectURL(file);
+      preview.src = url;
+      preview.style.display = 'block';
+      dropText.style.display = 'none';
+    }
+
+    // Compress an image file down to a small base64 string so it fits Firestore's 1MB doc limit
+    function compressImage(file, maxDimension = 1000, quality = 0.7) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            let { width, height } = img;
+            if (width > height && width > maxDimension) {
+              height = Math.round(height * (maxDimension / width));
+              width = maxDimension;
+            } else if (height > maxDimension) {
+              width = Math.round(width * (maxDimension / height));
+              height = maxDimension;
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', quality));
+          };
+          img.onerror = reject;
+          img.src = e.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function savePin() {
+      const file = fileInput.files[0];
+      const url = urlInput.value.trim();
+
+      const saveBtn = document.querySelector('.modal-actions .btn-primary');
+      const originalText = saveBtn.textContent;
+      saveBtn.textContent = 'Saving...';
+      saveBtn.disabled = true;
+
+      try {
+        let imageData;
+        if (file) {
+          imageData = await compressImage(file);
+        } else if (url) {
+          imageData = url;
+        } else {
+          alert('Please upload an image or paste an image URL');
+          saveBtn.textContent = originalText;
+          saveBtn.disabled = false;
+          return;
+        }
+
+        const pin = {
+          image: imageData,
+          title: titleInput.value.trim() || 'Untitled Pin',
+          desc: descInput.value.trim(),
+          category: catInput.value,
+          createdAt: Date.now()
+        };
+
+        await pinsCollection.add(pin);
+        closeModal();
+      } catch (e) {
+        console.error(e);
+        alert('Could not save pin. If uploading a photo, try a smaller image or use the Image URL option instead.');
+      } finally {
+        saveBtn.textContent = originalText;
+        saveBtn.disabled = false;
+      }
+    }
+
+    async function deletePin(id, e) {
+      e.stopPropagation();
+      try {
+        await pinsCollection.doc(id).delete();
+      } catch (err) {
+        console.error(err);
+        alert('Could not delete pin.');
+      }
+    }
+
+    // Real-time listener: keeps everyone's view in sync automatically
+    function listenForPins() {
+      pinsCollection.orderBy('createdAt', 'desc').onSnapshot(snapshot => {
+        pins = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderPins();
+      }, err => {
+        console.error('Firestore listener error:', err);
+      });
+    }
+
+    function renderPins() {
+      let filtered = pins.filter(p => {
+        const matchCat = currentFilter === 'All' || p.category === currentFilter;
+        const matchSearch = !currentSearch ||
+          p.title.toLowerCase().includes(currentSearch) ||
+          p.desc.toLowerCase().includes(currentSearch) ||
+          p.category.toLowerCase().includes(currentSearch);
+        return matchCat && matchSearch;
+      });
+
+      badge.textContent = `${filtered.length} Pin${filtered.length !== 1 ? 's' : ''}`;
+
+      if (!filtered.length) {
+        masonry.innerHTML = `
+          <div class="empty-state">
+            <h3>No pins yet</h3>
+            <p>Upload files (limited) or paste image URLs (unlimited) to start your board.</p>
+          </div>`;
+        return;
+      }
+
+      masonry.innerHTML = filtered.map(p => `
+        <div class="pin" onclick="openLightbox('${escapeHtml(p.image)}')">
+          <div class="img-wrap"><img src="${escapeHtml(p.image)}" alt="${escapeHtml(p.title)}" loading="lazy" onerror="this.parentElement.parentElement.style.display='none'"/></div>
+          <div class="overlay">
+            <div class="top">
+              <button class="save-btn">Save</button>
+            </div>
+            <div class="bottom">
+              <div>${escapeHtml(p.title)}</div>
+              <button class="delete-btn" onclick="deletePin('${p.id}', event)" title="Delete">🗑</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function openLightbox(src) {
+      lightboxImg.src = src;
+      lightbox.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+      lightbox.classList.remove('active');
+      setTimeout(() => { lightboxImg.src = ''; }, 200);
+      document.body.style.overflow = '';
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>
