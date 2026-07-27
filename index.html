@@ -1,0 +1,1675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pinspost - Photo Board</title>
+  <style>
+    :root {
+      --red: #e60023;
+      --red-hover: #c8001d;
+      --red-glow: rgba(230,0,35,0.35);
+      --bg: #111113;
+      --bg-elevated: #17171a;
+      --surface: #1c1c20;
+      --surface-2: #232328;
+      --border-soft: rgba(255,255,255,0.07);
+      --text: #f3f3f4;
+      --muted: #8b8b93;
+      --radius: 18px;
+      --radius-sm: 12px;
+      --shadow: 0 8px 24px rgba(0,0,0,0.45);
+      --shadow-hover: 0 16px 40px rgba(0,0,0,0.55);
+      --ease: cubic-bezier(0.22, 1, 0.36, 1);
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+      background:
+        radial-gradient(1200px 600px at 15% -10%, rgba(230,0,35,0.06), transparent 60%),
+        radial-gradient(900px 500px at 100% 0%, rgba(255,255,255,0.03), transparent 55%),
+        var(--bg);
+      background-attachment: fixed;
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    ::selection { background: var(--red-glow); color: #fff; }
+
+    /* Smooth custom scrollbar */
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.12);
+      border-radius: 999px;
+      border: 2px solid var(--bg);
+    }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.22); }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(17,17,19,0.72);
+      backdrop-filter: blur(16px) saturate(160%);
+      -webkit-backdrop-filter: blur(16px) saturate(160%);
+      border-bottom: 1px solid var(--border-soft);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 12px 24px;
+      transition: box-shadow 0.3s var(--ease);
+    }
+
+    .header-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .header-row-top {
+      justify-content: space-between;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .header-row-bottom {
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-size: 23px;
+      font-weight: 800;
+      color: var(--red);
+      letter-spacing: -0.6px;
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.25s var(--ease), color 0.25s;
+      display: inline-block;
+    }
+
+    .logo:hover {
+      transform: translateY(-1px) scale(1.03);
+      color: #ff2f4d;
+    }
+
+    .logo:active { transform: scale(0.97); }
+
+    .search-box {
+      flex: 1;
+      max-width: 800px;
+      position: relative;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 12px 16px 12px 42px;
+      border-radius: 999px;
+      border: 1.5px solid transparent;
+      background: var(--surface);
+      color: var(--text);
+      font-size: 15.5px;
+      outline: none;
+      transition: box-shadow 0.25s var(--ease), background 0.25s var(--ease), border-color 0.25s var(--ease);
+    }
+
+    .search-box input::placeholder { color: var(--muted); opacity: 1; }
+
+    .search-box input:hover { background: var(--surface-2); }
+
+    .search-box input:focus {
+      background: var(--surface-2);
+      border-color: rgba(230,0,35,0.5);
+      box-shadow: 0 0 0 4px var(--red-glow);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      opacity: 0.45;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+
+    .search-box input:focus ~ .search-icon { opacity: 0.7; }
+
+    .btn {
+      border: none;
+      border-radius: 999px;
+      padding: 10px 18px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 15px;
+      transition: transform 0.18s var(--ease-out), box-shadow 0.25s var(--ease), background 0.2s var(--ease), color 0.2s;
+      white-space: nowrap;
+      will-change: transform;
+    }
+
+    .btn:active { transform: scale(0.95); }
+
+    .btn-primary {
+      background: var(--red);
+      color: #fff;
+      box-shadow: 0 2px 10px rgba(230,0,35,0.25);
+    }
+
+    .btn-primary:hover {
+      background: var(--red-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(230,0,35,0.4);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text);
+    }
+
+    .btn-ghost:hover { background: rgba(255,255,255,0.1); }
+
+    .view-switch {
+      display: flex;
+      background: var(--surface);
+      border-radius: 999px;
+      padding: 4px;
+      gap: 2px;
+      flex-shrink: 0;
+    }
+
+    .view-btn {
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 14px;
+      padding: 8px 16px;
+      border-radius: 999px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.25s var(--ease), color 0.25s var(--ease), transform 0.15s var(--ease-out);
+    }
+
+    .view-btn:hover { color: var(--text); }
+    .view-btn:active { transform: scale(0.95); }
+
+    .view-btn.active {
+      background: var(--text);
+      color: var(--bg);
+    }
+
+    .requests-page {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 24px 24px 64px;
+      animation: fadeScaleIn 0.35s var(--ease-out);
+    }
+
+    .requests-header {
+      margin-bottom: 18px;
+    }
+
+    .requests-header h2 {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 4px;
+    }
+
+    .composer {
+      background: var(--surface);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin-bottom: 24px;
+      transition: border-color 0.25s var(--ease), box-shadow 0.25s var(--ease);
+    }
+
+    .composer:focus-within {
+      border-color: rgba(230,0,35,0.5);
+      box-shadow: 0 0 0 4px var(--red-glow);
+    }
+
+    .composer textarea {
+      width: 100%;
+      border: none;
+      background: transparent;
+      color: var(--text);
+      font-size: 15px;
+      font-family: inherit;
+      resize: vertical;
+      min-height: 44px;
+      outline: none;
+      line-height: 1.5;
+    }
+
+    .composer textarea::placeholder { color: var(--muted); }
+
+    .composer-actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 8px;
+    }
+
+    .requests-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .request-card {
+      background: var(--surface);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      opacity: 0;
+      transform: translateY(10px);
+      animation: pinIn 0.45s var(--ease-out) forwards;
+      transition: border-color 0.25s var(--ease), box-shadow 0.25s var(--ease);
+    }
+
+    .request-card:hover {
+      border-color: rgba(255,255,255,0.14);
+      box-shadow: var(--shadow);
+    }
+
+    .request-desc {
+      font-size: 15.5px;
+      line-height: 1.55;
+      margin-bottom: 12px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .request-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12.5px;
+      color: var(--muted);
+    }
+
+    .comment-toggle {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 6px 10px;
+      border-radius: 999px;
+      transition: background 0.2s var(--ease), color 0.2s var(--ease);
+    }
+
+    .comment-toggle svg { width: 15px; height: 15px; }
+
+    .comment-toggle:hover {
+      background: rgba(255,255,255,0.08);
+      color: var(--text);
+    }
+
+    .comments-section {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border-soft);
+      animation: fadeScaleIn 0.25s var(--ease-out);
+    }
+
+    .comments-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 10px;
+      max-height: 240px;
+      overflow-y: auto;
+    }
+
+    .no-comments {
+      color: var(--muted);
+      font-size: 13.5px;
+      font-style: italic;
+    }
+
+    .comment {
+      background: var(--surface-2);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      font-size: 13.5px;
+      line-height: 1.5;
+    }
+
+    .comment-author {
+      font-weight: 700;
+      margin-right: 6px;
+    }
+
+    .comment-text {
+      color: var(--text);
+      opacity: 0.92;
+    }
+
+    .comment-input-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .comment-input-row input {
+      flex: 1;
+      padding: 9px 14px;
+      border-radius: 999px;
+      border: 1.5px solid var(--border-soft);
+      background: var(--surface-2);
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+      font-family: inherit;
+      transition: border-color 0.2s var(--ease), box-shadow 0.2s var(--ease);
+    }
+
+    .comment-input-row input:focus {
+      border-color: rgba(230,0,35,0.5);
+      box-shadow: 0 0 0 3px var(--red-glow);
+    }
+
+    .comment-input-row input::placeholder { color: var(--muted); }
+
+    .comment-send { padding: 9px 16px; font-size: 13.5px; }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      padding: 16px 24px 10px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .tabs::-webkit-scrollbar { display: none; }
+
+    .tab {
+      padding: 8px 16px;
+      border-radius: 999px;
+      border: none;
+      background: transparent;
+      color: var(--text);
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.25s var(--ease), color 0.25s var(--ease), transform 0.18s var(--ease-out);
+    }
+
+    .tab:hover { background: rgba(255,255,255,0.08); transform: translateY(-1px); }
+    .tab:active { transform: scale(0.95); }
+
+    .tab.active {
+      background: var(--text);
+      color: var(--bg);
+    }
+
+    .masonry {
+      columns: 2;
+      column-gap: 16px;
+      padding: 18px 24px 64px;
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+
+    @media (min-width: 640px) { .masonry { columns: 3; } }
+    @media (min-width: 1024px) { .masonry { columns: 4; } }
+    @media (min-width: 1400px) { .masonry { columns: 5; } }
+
+    .pin {
+      break-inside: avoid;
+      margin-bottom: 16px;
+      position: relative;
+      border-radius: var(--radius);
+      overflow: hidden;
+      cursor: zoom-in;
+      background: var(--surface);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      opacity: 0;
+      transform: translateY(14px) scale(0.98);
+      animation: pinIn 0.55s var(--ease-out) forwards;
+      transition: box-shadow 0.35s var(--ease), transform 0.35s var(--ease);
+    }
+
+    .pin:hover {
+      box-shadow: 0 14px 34px rgba(0,0,0,0.5);
+      transform: translateY(-3px);
+    }
+
+    @keyframes pinIn {
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .pin .img-wrap {
+      overflow: hidden;
+      border-radius: var(--radius);
+      background: var(--surface);
+    }
+
+    .pin img {
+      width: 100%;
+      display: block;
+      border-radius: var(--radius);
+      transition: transform 0.5s var(--ease), filter 0.4s var(--ease), opacity 0.35s var(--ease);
+      opacity: 0;
+    }
+
+    .pin img.loaded { opacity: 1; }
+
+    .broken-placeholder {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 36px 16px;
+      min-height: 140px;
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+      background: var(--surface);
+      border-radius: var(--radius);
+    }
+
+    .broken-placeholder svg { width: 30px; height: 30px; opacity: 0.6; }
+
+    .pin.broken .img-wrap { display: none; }
+    .pin.broken .broken-placeholder { display: flex; }
+    .pin.broken { cursor: default; }
+    .pin.broken:hover .overlay { opacity: 1; }
+
+    .pin:hover .overlay { opacity: 1; }
+    @media (hover: hover) and (pointer: fine) {
+      .pin:hover img {
+        transform: scale(1.045);
+        filter: brightness(0.6);
+      }
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.28s var(--ease);
+      display: flex;
+      justify-content: flex-end;
+      align-items: flex-start;
+      padding: 12px;
+      border-radius: var(--radius);
+      pointer-events: none;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, transparent 40%);
+    }
+
+    .overlay .top {
+      display: flex;
+      justify-content: flex-end;
+      pointer-events: auto;
+      transform: translateY(-6px);
+      transition: transform 0.32s var(--ease) 0.02s;
+    }
+
+    .pin:hover .overlay .top { transform: translateY(0); }
+
+    .delete-btn {
+      background: rgba(20,20,22,0.6);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 999px;
+      width: 34px;
+      height: 34px;
+      flex-shrink: 0;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      transition: background 0.2s var(--ease), transform 0.15s var(--ease-out), border-color 0.2s var(--ease);
+    }
+    .delete-btn svg { width: 16px; height: 16px; pointer-events: none; }
+    .delete-btn:hover {
+      background: var(--red);
+      border-color: var(--red);
+      transform: translateY(-1px);
+    }
+    .delete-btn:active { transform: scale(0.9); }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      transition: opacity 0.28s var(--ease);
+    }
+
+    .modal-overlay.active {
+      display: flex;
+      opacity: 1;
+      animation: overlayIn 0.28s var(--ease);
+    }
+
+    @keyframes overlayIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal {
+      background: var(--bg-elevated);
+      border-radius: var(--radius);
+      width: 100%;
+      max-width: 480px;
+      padding: 26px;
+      box-shadow: var(--shadow-hover);
+      max-height: 90vh;
+      overflow-y: auto;
+      color: var(--text);
+      border: 1px solid var(--border-soft);
+      transform: translateY(16px) scale(0.97);
+      opacity: 0;
+      animation: modalIn 0.35s var(--ease-out) forwards;
+    }
+
+    @keyframes modalIn {
+      to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+
+    .modal h2 {
+      margin-bottom: 18px;
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+    }
+
+    .form-group { margin-bottom: 14px; }
+
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      font-size: 13px;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      color: var(--muted);
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: var(--radius-sm);
+      border: 1.5px solid var(--border-soft);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 15px;
+      outline: none;
+      transition: border-color 0.22s var(--ease), box-shadow 0.22s var(--ease), background 0.22s var(--ease);
+      font-family: inherit;
+    }
+
+    .form-group input:hover,
+    .form-group select:hover,
+    .form-group textarea:hover { border-color: rgba(255,255,255,0.16); }
+
+    .form-group input::placeholder,
+    .form-group textarea::placeholder { color: var(--muted); opacity: 1; }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: var(--red);
+      background: var(--surface-2);
+      box-shadow: 0 0 0 4px var(--red-glow);
+    }
+
+    .form-group textarea { resize: vertical; min-height: 80px; }
+
+    .drop-zone {
+      border: 1.5px dashed rgba(255,255,255,0.18);
+      border-radius: var(--radius-sm);
+      padding: 28px 16px;
+      text-align: center;
+      color: var(--muted);
+      cursor: pointer;
+      transition: background 0.25s var(--ease), border-color 0.25s var(--ease), transform 0.2s var(--ease-out);
+      position: relative;
+      overflow: hidden;
+      background: rgba(255,255,255,0.02);
+    }
+
+    .drop-zone:hover {
+      background: rgba(255,255,255,0.05);
+      border-color: rgba(255,255,255,0.32);
+    }
+
+    .drop-zone.dragover {
+      background: rgba(230,0,35,0.08);
+      border-color: var(--red);
+      transform: scale(1.01);
+    }
+
+    .drop-zone input[type=file] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .preview {
+      max-height: 180px;
+      max-width: 100%;
+      border-radius: var(--radius-sm);
+      display: none;
+      margin: 0 auto;
+      object-fit: cover;
+      animation: fadeScaleIn 0.3s var(--ease-out);
+    }
+
+    @keyframes fadeScaleIn {
+      from { opacity: 0; transform: scale(0.96); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 70px 20px;
+      color: var(--muted);
+      animation: fadeScaleIn 0.4s var(--ease-out);
+    }
+
+    .empty-state h3 {
+      color: var(--text);
+      font-size: 19px;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    .count-badge {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--text);
+      color: var(--bg);
+      padding: 10px 18px;
+      border-radius: 999px;
+      font-weight: 700;
+      box-shadow: var(--shadow);
+      z-index: 90;
+      font-size: 13px;
+      transition: transform 0.25s var(--ease-out), box-shadow 0.25s var(--ease);
+    }
+
+    .count-badge:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.92);
+      backdrop-filter: blur(4px);
+      z-index: 300;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      opacity: 0;
+      transition: opacity 0.3s var(--ease);
+    }
+
+    .lightbox.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    .lightbox img {
+      max-width: 100%;
+      max-height: 85vh;
+      border-radius: var(--radius);
+      box-shadow: 0 24px 70px rgba(0,0,0,0.75);
+      animation: lightboxIn 0.32s var(--ease-out);
+    }
+
+    @keyframes lightboxIn {
+      from { opacity: 0; transform: scale(0.94); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .lightbox .close {
+      position: absolute;
+      top: 20px;
+      right: 24px;
+      background: rgba(255,255,255,0.12);
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      width: 42px;
+      height: 42px;
+      font-size: 22px;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      transition: background 0.2s var(--ease), transform 0.2s var(--ease-out), rotate 0.3s var(--ease);
+    }
+
+    .lightbox .close:hover {
+      background: rgba(255,255,255,0.22);
+      transform: scale(1.06);
+      rotate: 90deg;
+    }
+    .lightbox .close:active { transform: scale(0.92); }
+
+    .hint {
+      font-size: 12.5px;
+      color: var(--muted);
+      margin-top: 6px;
+      line-height: 1.5;
+    }
+
+    /* ===== Mobile & small screens ===== */
+    @media (max-width: 640px) {
+      .header-row-top { gap: 8px; }
+      .logo { font-size: 20px; }
+      .header-actions { gap: 6px; }
+      #userLabel { display: none; }
+      .btn { padding: 9px 14px; font-size: 14px; }
+      .btn-ghost { padding: 9px 10px; }
+
+      .header-row-bottom { flex-direction: row; }
+      .view-switch { flex-shrink: 0; }
+      .view-btn { padding: 7px 12px; font-size: 13px; }
+      .search-box input { padding: 10px 14px 10px 38px; font-size: 14.5px; }
+      .search-icon { left: 13px; width: 16px; height: 16px; }
+
+      .tabs { padding: 12px 16px 6px; }
+      .tab { padding: 7px 13px; font-size: 13px; }
+
+      .masonry { columns: 2; column-gap: 10px; padding: 12px 12px 48px; }
+      .pin { margin-bottom: 10px; }
+      .pin:hover { transform: none; }
+
+      .overlay .top { transform: none; }
+
+      .requests-page { padding: 16px 16px 48px; }
+      .requests-header h2 { font-size: 21px; }
+      .composer { padding: 12px 14px; }
+      .request-card { padding: 15px 16px; }
+      .comment-input-row input { font-size: 13.5px; }
+      .comment-send { padding: 8px 13px; }
+
+      .modal { padding: 20px; max-width: 100%; }
+      .count-badge { bottom: 16px; right: 16px; padding: 8px 14px; font-size: 12px; }
+      .lightbox .close { top: 14px; right: 14px; width: 38px; height: 38px; }
+    }
+
+    @media (max-width: 400px) {
+      .masonry { columns: 1; }
+    }
+
+    /* Touch devices: show the delete control without relying on hover */
+    @media (hover: none) {
+      .pin .overlay { opacity: 1; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+
+  <!-- Firebase SDK (compat version - works with plain script tags, no build tools needed) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+</head>
+<body>
+
+  <header>
+    <div class="header-row header-row-top">
+      <div class="logo" onclick="switchView('board')">Pinspost</div>
+      <div class="header-actions">
+        <span id="userLabel" style="font-size:14px; color:var(--muted); white-space:nowrap;"></span>
+        <button class="btn btn-ghost" id="loginBtn" onclick="openAuthModal()">Log in</button>
+        <button class="btn btn-ghost" id="logoutBtn" onclick="logOut()" style="display:none;">Log out</button>
+        <button class="btn btn-primary" id="createBtn" onclick="openModal()">+ Create</button>
+      </div>
+    </div>
+    <div class="header-row header-row-bottom">
+      <div class="view-switch" id="viewSwitch">
+        <button class="view-btn active" id="viewBtnBoard" onclick="switchView('board')">Board</button>
+        <button class="view-btn" id="viewBtnRequests" onclick="switchView('requests')">Community</button>
+      </div>
+      <div class="search-box">
+        <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" id="searchInput" placeholder="Search your pins..." />
+      </div>
+    </div>
+  </header>
+
+  <div class="tabs" id="categoryTabs"></div>
+
+  <div class="masonry" id="masonry"></div>
+
+  <!-- Community view -->
+  <div class="requests-page" id="requestsPage" style="display:none;">
+    <div class="requests-header">
+      <div>
+        <h2>Community</h2>
+        <p class="hint">Share a thought, ask for a photo, or just say hi.</p>
+      </div>
+    </div>
+
+    <div class="composer">
+      <textarea id="reqDescInput" placeholder="What's on your mind?" rows="2"></textarea>
+      <div class="composer-actions">
+        <button class="btn btn-primary" onclick="saveRequest()">Post</button>
+      </div>
+    </div>
+
+    <div class="requests-list" id="requestsList"></div>
+  </div>
+
+  <!-- Login / Signup modal -->
+  <div class="modal-overlay" id="authModal" onclick="if(event.target===this) closeAuthModal()">
+    <div class="modal">
+      <h2 id="authModalTitle">Log in</h2>
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" id="authUsername" placeholder="yourusername" autocapitalize="off" autocorrect="off" />
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="authPassword" placeholder="••••••••" />
+      </div>
+      <p class="hint" id="authError" style="color:#ff6b6b;"></p>
+      <div class="modal-actions" style="justify-content:space-between; align-items:center;">
+        <button class="btn btn-ghost" id="authToggleBtn" onclick="toggleAuthMode()" style="padding-left:0;">Need an account? Sign up</button>
+        <div style="display:flex; gap:10px;">
+          <button class="btn btn-ghost" onclick="closeAuthModal()">Cancel</button>
+          <button class="btn btn-primary" id="authSubmitBtn" onclick="submitAuth()">Log in</button>
+        </div>
+      </div>
+      <p class="hint" style="margin-top:16px; text-align:center; cursor:pointer;" onclick="openAdminLogin()">Admin login</p>
+    </div>
+  </div>
+
+  <!-- Admin login modal -->
+  <div class="modal-overlay" id="adminModal" onclick="if(event.target===this) closeAdminModal()">
+    <div class="modal">
+      <h2>Admin Login</h2>
+      <div class="form-group">
+        <label>Admin Password</label>
+        <input type="password" id="adminPassword" placeholder="••••••••" />
+      </div>
+      <p class="hint" id="adminError" style="color:#ff6b6b;"></p>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="closeAdminModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="submitAdminLogin()">Log in</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modal" onclick="if(event.target===this) closeModal()">
+    <div class="modal">
+      <h2>Create Pin</h2>
+      <div class="drop-zone" id="dropZone">
+        <input type="file" id="fileInput" accept="image/*" />
+        <p id="dropText">Drag & drop or click to upload an image</p>
+        <img class="preview" id="preview" alt="Preview" />
+      </div>
+      <p class="hint">Photos are visible to everyone who visits this site. Large images are automatically compressed before saving.</p>
+
+      <div class="form-group" style="margin-top:12px;">
+        <label>Or Image URL (Recommended for many photos)</label>
+        <input type="url" id="urlInput" placeholder="https://i.imgur.com/photo.jpg" />
+      </div>
+
+      <div class="form-group">
+        <label>Title</label>
+        <input type="text" id="titleInput" placeholder="Add a title" />
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea id="descInput" placeholder="Say more about this pin"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Category</label>
+        <select id="catInput">
+          <option>Home</option>
+          <option>Fashion</option>
+          <option>Art</option>
+          <option>Travel</option>
+          <option>Food</option>
+          <option>Nature</option>
+          <option>Technology</option>
+ <option>Other</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="savePin()">Save Pin</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="lightbox" id="lightbox" onclick="if(event.target===this || event.target.closest('.close')) closeLightbox()">
+    <button class="close">&times;</button>
+    <img id="lightboxImg" src="" alt="" />
+  </div>
+
+  <div class="count-badge" id="badge">0 Pins</div>
+
+  <script>
+    // ====== Firebase setup ======
+    const firebaseConfig = {
+      apiKey: "AIzaSyACid5zy30JWgJz-5FNDzxyysyqYQUdvu8",
+      authDomain: "pinpost-app.firebaseapp.com",
+      projectId: "pinpost-app",
+      appId: "1:292350218654:web:83574ad58896850a4c068f"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+    const pinsCollection = db.collection('pins');
+    const requestsCollection = db.collection('requests');
+
+    // Change this to your own secret admin password before publishing
+    const ADMIN_PASSWORD = "Daughter231@";
+    const ADMIN_FLAG_KEY = "pinpost_is_admin";
+
+    let pins = [];
+    let requests = [];
+    let currentView = 'board';    // 'board' or 'requests'
+    let currentFilter = 'All';
+    let currentSearch = '';
+    let currentUser = null;       // Firebase auth user object
+    let isAdmin = false;          // set true only via admin password login
+    let authMode = 'login';       // 'login' or 'signup'
+    const categories = ['All','Home','Fashion','Art','Travel','Food','Nature','Technology','Other'];
+
+    const masonry = document.getElementById('masonry');
+    const categoryTabs = document.getElementById('categoryTabs');
+    const requestsPage = document.getElementById('requestsPage');
+    const requestsList = document.getElementById('requestsList');
+    const viewBtnBoard = document.getElementById('viewBtnBoard');
+    const viewBtnRequests = document.getElementById('viewBtnRequests');
+    const createBtn = document.getElementById('createBtn');
+    const reqDescInput = document.getElementById('reqDescInput');
+    const modal = document.getElementById('modal');
+    const fileInput = document.getElementById('fileInput');
+    const dropZone = document.getElementById('dropZone');
+    const dropText = document.getElementById('dropText');
+    const preview = document.getElementById('preview');
+    const urlInput = document.getElementById('urlInput');
+    const titleInput = document.getElementById('titleInput');
+    const descInput = document.getElementById('descInput');
+    const catInput = document.getElementById('catInput');
+    const searchInput = document.getElementById('searchInput');
+    const badge = document.getElementById('badge');
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightboxImg');
+    const authModal = document.getElementById('authModal');
+    const authUsername = document.getElementById('authUsername');
+    const authPassword = document.getElementById('authPassword');
+    const authError = document.getElementById('authError');
+    const authModalTitle = document.getElementById('authModalTitle');
+    const authToggleBtn = document.getElementById('authToggleBtn');
+    const authSubmitBtn = document.getElementById('authSubmitBtn');
+    const userLabel = document.getElementById('userLabel');
+    const loginBtn = document.getElementById('loginBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const adminModal = document.getElementById('adminModal');
+    const adminPassword = document.getElementById('adminPassword');
+    const adminError = document.getElementById('adminError');
+
+    renderTabs();
+    renderPins();
+    listenForPins();
+    listenForRequests();
+    initAuth();
+
+    fileInput.addEventListener('change', handleFile);
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      if (e.dataTransfer.files.length) {
+        fileInput.files = e.dataTransfer.files;
+        handleFile();
+      }
+    });
+
+    urlInput.addEventListener('input', () => {
+      const url = urlInput.value.trim();
+      if (url.match(/^https?:\/\/.+/)) {
+        preview.src = url;
+        preview.style.display = 'block';
+        dropText.style.display = 'none';
+      }
+    });
+
+    searchInput.addEventListener('input', e => {
+      currentSearch = e.target.value.toLowerCase();
+      renderPins();
+    });
+
+    function usernameToEmail(username) {
+      return username.trim().toLowerCase().replace(/[^a-z0-9_.-]/g, '') + '@pinpost.local';
+    }
+
+    function initAuth() {
+      isAdmin = sessionStorage.getItem(ADMIN_FLAG_KEY) === 'true';
+      auth.onAuthStateChanged(user => {
+        currentUser = user;
+        updateAuthUI();
+        renderPins();
+      });
+    }
+
+    function updateAuthUI() {
+      if (isAdmin) {
+        userLabel.textContent = 'Admin';
+        loginBtn.style.display = 'none';
+        logoutBtn.style.display = 'inline-block';
+      } else if (currentUser) {
+        userLabel.textContent = currentUser.email.replace('@pinpost.local', '');
+        loginBtn.style.display = 'none';
+        logoutBtn.style.display = 'inline-block';
+      } else {
+        userLabel.textContent = '';
+        loginBtn.style.display = 'inline-block';
+        logoutBtn.style.display = 'none';
+      }
+    }
+
+    function openAuthModal() {
+      authMode = 'login';
+      updateAuthModalMode();
+      authUsername.value = '';
+      authPassword.value = '';
+      authError.textContent = '';
+      authModal.classList.add('active');
+    }
+
+    function closeAuthModal() {
+      authModal.classList.remove('active');
+    }
+
+    function toggleAuthMode() {
+      authMode = authMode === 'login' ? 'signup' : 'login';
+      updateAuthModalMode();
+    }
+
+    function updateAuthModalMode() {
+      if (authMode === 'login') {
+        authModalTitle.textContent = 'Log in';
+        authSubmitBtn.textContent = 'Log in';
+        authToggleBtn.textContent = 'Need an account? Sign up';
+      } else {
+        authModalTitle.textContent = 'Sign up';
+        authSubmitBtn.textContent = 'Sign up';
+        authToggleBtn.textContent = 'Already have an account? Log in';
+      }
+      authError.textContent = '';
+    }
+
+    async function submitAuth() {
+      const username = authUsername.value.trim();
+      const password = authPassword.value;
+      authError.textContent = '';
+
+      if (!username || !password) {
+        authError.textContent = 'Please enter a username and password.';
+        return;
+      }
+      if (password.length < 6) {
+        authError.textContent = 'Password must be at least 6 characters.';
+        return;
+      }
+
+      const email = usernameToEmail(username);
+      authSubmitBtn.disabled = true;
+
+      try {
+        if (authMode === 'signup') {
+          const cred = await auth.createUserWithEmailAndPassword(email, password);
+          await cred.user.updateProfile({ displayName: username });
+        } else {
+          await auth.signInWithEmailAndPassword(email, password);
+        }
+        isAdmin = false;
+        sessionStorage.removeItem(ADMIN_FLAG_KEY);
+        closeAuthModal();
+      } catch (e) {
+        console.error(e);
+        if (e.code === 'auth/email-already-in-use') {
+          authError.textContent = 'That username is already taken.';
+        } else if (e.code === 'auth/invalid-credential' || e.code === 'auth/wrong-password' || e.code === 'auth/user-not-found') {
+          authError.textContent = 'Incorrect username or password.';
+        } else {
+          authError.textContent = 'Something went wrong. Please try again.';
+        }
+      } finally {
+        authSubmitBtn.disabled = false;
+      }
+    }
+
+    function logOut() {
+      isAdmin = false;
+      sessionStorage.removeItem(ADMIN_FLAG_KEY);
+      auth.signOut();
+      updateAuthUI();
+      renderPins();
+    }
+
+    function openAdminLogin() {
+      closeAuthModal();
+      adminPassword.value = '';
+      adminError.textContent = '';
+      adminModal.classList.add('active');
+    }
+
+    function closeAdminModal() {
+      adminModal.classList.remove('active');
+    }
+
+    function submitAdminLogin() {
+      if (adminPassword.value === ADMIN_PASSWORD) {
+        isAdmin = true;
+        sessionStorage.setItem(ADMIN_FLAG_KEY, 'true');
+        auth.signOut(); // admin doesn't need a regular auth session
+        closeAdminModal();
+        updateAuthUI();
+        renderPins();
+      } else {
+        adminError.textContent = 'Incorrect admin password.';
+      }
+    }
+
+    function requireLogin() {
+      if (!currentUser && !isAdmin) {
+        openAuthModal();
+        return false;
+      }
+      return true;
+    }
+
+    function switchView(view) {
+      currentView = view;
+      viewBtnBoard.classList.toggle('active', view === 'board');
+      viewBtnRequests.classList.toggle('active', view === 'requests');
+
+      if (view === 'board') {
+        categoryTabs.style.display = 'flex';
+        masonry.style.display = '';
+        requestsPage.style.display = 'none';
+        createBtn.style.display = '';
+      } else {
+        categoryTabs.style.display = 'none';
+        masonry.style.display = 'none';
+        requestsPage.style.display = 'block';
+        createBtn.style.display = 'none';
+        renderRequests();
+      }
+    }
+
+    function renderTabs() {
+      const tabs = document.getElementById('categoryTabs');
+      tabs.innerHTML = categories.map(c =>
+        `<button class="tab ${c === currentFilter ? 'active' : ''}" onclick="filterCategory('${c}')">${c}</button>`
+      ).join('');
+    }
+
+    function filterCategory(cat) {
+      currentFilter = cat;
+      renderTabs();
+      renderPins();
+    }
+
+    function openModal() {
+      if (!requireLogin()) return;
+      modal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      modal.classList.remove('active');
+      document.body.style.overflow = '';
+      resetForm();
+    }
+
+    function resetForm() {
+      fileInput.value = '';
+      preview.style.display = 'none';
+      preview.src = '';
+      dropText.style.display = 'block';
+      urlInput.value = '';
+      titleInput.value = '';
+      descInput.value = '';
+      catInput.selectedIndex = 0;
+    }
+
+    function handleFile() {
+      const file = fileInput.files[0];
+      if (!file) return;
+      const url = URL.createObjectURL(file);
+      preview.src = url;
+      preview.style.display = 'block';
+      dropText.style.display = 'none';
+    }
+
+    // Compress an image file down to a small base64 string so it fits Firestore's 1MB doc limit.
+    // Retries at lower quality/size if the result is still too large, since an oversized or
+    // truncated base64 string is the main cause of images failing to decode (showing as black/broken).
+    function compressImage(file, maxDimension = 1000, quality = 0.7) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            const encode = (dim, q) => {
+              let { width, height } = img;
+              if (width > height && width > dim) {
+                height = Math.round(height * (dim / width));
+                width = dim;
+              } else if (height > dim) {
+                width = Math.round(width * (dim / height));
+                height = dim;
+              }
+              const canvas = document.createElement('canvas');
+              canvas.width = width;
+              canvas.height = height;
+              canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+              return canvas.toDataURL('image/jpeg', q);
+            };
+
+            // Firestore's per-document limit is 1MB; stay comfortably under it.
+            const MAX_BYTES = 700 * 1024;
+            let dim = maxDimension;
+            let q = quality;
+            let result = encode(dim, q);
+
+            let attempts = 0;
+            while (result.length > MAX_BYTES && attempts < 5) {
+              q = Math.max(0.35, q - 0.15);
+              dim = Math.max(500, Math.round(dim * 0.85));
+              result = encode(dim, q);
+              attempts++;
+            }
+
+            if (result.length > MAX_BYTES) {
+              reject(new Error('Image is too large even after compression.'));
+              return;
+            }
+            resolve(result);
+          };
+          img.onerror = () => reject(new Error('Could not read that image file.'));
+          img.src = e.target.result;
+        };
+        reader.onerror = () => reject(new Error('Could not read that file.'));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function savePin() {
+      if (!requireLogin()) return;
+      const file = fileInput.files[0];
+      const url = urlInput.value.trim();
+
+      const saveBtn = document.querySelector('.modal-actions .btn-primary');
+      const originalText = saveBtn.textContent;
+      saveBtn.textContent = 'Saving...';
+      saveBtn.disabled = true;
+
+      try {
+        let imageData;
+        if (file) {
+          imageData = await compressImage(file);
+        } else if (url) {
+          imageData = url;
+        } else {
+          alert('Please upload an image or paste an image URL');
+          saveBtn.textContent = originalText;
+          saveBtn.disabled = false;
+          return;
+        }
+
+        const pin = {
+          image: imageData,
+          title: titleInput.value.trim() || 'Untitled Pin',
+          desc: descInput.value.trim(),
+          category: catInput.value,
+          createdAt: Date.now(),
+          ownerUid: currentUser ? currentUser.uid : (isAdmin ? 'admin' : null),
+          ownerName: currentUser ? currentUser.displayName || currentUser.email.replace('@pinpost.local','') : (isAdmin ? 'Admin' : 'Unknown')
+        };
+
+        await pinsCollection.add(pin);
+        closeModal();
+      } catch (e) {
+        console.error(e);
+        alert(e && e.message ? e.message + ' Try a smaller image or use the Image URL option instead.' : 'Could not save pin. If uploading a photo, try a smaller image or use the Image URL option instead.');
+      } finally {
+        saveBtn.textContent = originalText;
+        saveBtn.disabled = false;
+      }
+    }
+
+    async function deletePin(id, e) {
+      e.stopPropagation();
+      const pin = pins.find(p => p.id === id);
+      if (!pin) return;
+      const canDelete = isAdmin || (currentUser && pin.ownerUid === currentUser.uid);
+      if (!canDelete) {
+        alert("You can only delete your own pins.");
+        return;
+      }
+      try {
+        await pinsCollection.doc(id).delete();
+      } catch (err) {
+        console.error(err);
+        alert('Could not delete pin.');
+      }
+    }
+
+    // Real-time listener: keeps everyone's view in sync automatically
+    function listenForPins() {
+      pinsCollection.orderBy('createdAt', 'desc').onSnapshot(snapshot => {
+        pins = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderPins();
+      }, err => {
+        console.error('Firestore listener error:', err);
+      });
+    }
+
+    function renderPins() {
+      let filtered = pins.filter(p => {
+        const matchCat = currentFilter === 'All' || p.category === currentFilter;
+        const matchSearch = !currentSearch ||
+          p.title.toLowerCase().includes(currentSearch) ||
+          p.desc.toLowerCase().includes(currentSearch) ||
+          p.category.toLowerCase().includes(currentSearch);
+        return matchCat && matchSearch;
+      });
+
+      badge.textContent = `${filtered.length} Pin${filtered.length !== 1 ? 's' : ''}`;
+
+      if (!filtered.length) {
+        masonry.innerHTML = `
+          <div class="empty-state">
+            <h3>No pins yet</h3>
+            <p>Upload files (limited) or paste image URLs (unlimited) to start your board.</p>
+          </div>`;
+        return;
+      }
+
+      masonry.innerHTML = filtered.map((p, i) => {
+        const canDelete = isAdmin || (currentUser && p.ownerUid === currentUser.uid);
+        const deleteBtnHtml = canDelete
+          ? `<button class="delete-btn" onclick="deletePin('${p.id}', event)" title="Delete" aria-label="Delete pin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button>`
+          : '';
+        const delay = Math.min(i, 20) * 0.035;
+        return `
+        <div class="pin" style="animation-delay:${delay}s" onclick="if(!this.classList.contains('broken')) openLightbox('${escapeHtml(p.image)}')">
+          <div class="img-wrap"><img src="${escapeHtml(p.image)}" alt="${escapeHtml(p.title)}" loading="lazy" onload="this.classList.add('loaded')" onerror="this.closest('.pin').classList.add('broken')"/></div>
+          <div class="broken-placeholder">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+            <span>Image failed to load</span>
+          </div>
+          ${canDelete ? `<div class="overlay"><div class="top">${deleteBtnHtml}</div></div>` : ''}
+        </div>
+      `;
+      }).join('');
+
+      // Safety net: if an image was already cached/complete before onload could fire, show it now
+      masonry.querySelectorAll('img').forEach(img => {
+        if (img.complete && img.naturalWidth > 0) img.classList.add('loaded');
+      });
+    }
+
+    function openLightbox(src) {
+      lightboxImg.src = src;
+      lightbox.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+      lightbox.classList.remove('active');
+      setTimeout(() => { lightboxImg.src = ''; }, 200);
+      document.body.style.overflow = '';
+    }
+
+    // ====== Community ======
+    let openCommentsFor = new Set(); // ids of posts with comment box expanded
+    let commentsCache = {};          // postId -> array of comments (live)
+    let commentUnsubs = {};          // postId -> unsubscribe fn
+
+    async function saveRequest() {
+      if (!requireLogin()) return;
+      const desc = reqDescInput.value.trim();
+      if (!desc) {
+        alert('Write something before posting.');
+        return;
+      }
+
+      const postBtn = document.querySelector('.composer-actions .btn-primary');
+      const originalText = postBtn.textContent;
+      postBtn.textContent = 'Posting...';
+      postBtn.disabled = true;
+
+      try {
+        const post = {
+          desc,
+          createdAt: Date.now(),
+          ownerUid: currentUser ? currentUser.uid : (isAdmin ? 'admin' : null),
+          ownerName: currentUser ? currentUser.displayName || currentUser.email.replace('@pinpost.local','') : (isAdmin ? 'Admin' : 'Unknown')
+        };
+        await requestsCollection.add(post);
+        reqDescInput.value = '';
+      } catch (e) {
+        console.error(e);
+        alert('Could not post. Please try again.');
+      } finally {
+        postBtn.textContent = originalText;
+        postBtn.disabled = false;
+      }
+    }
+
+    async function deleteRequest(id, e) {
+      e.stopPropagation();
+      const req = requests.find(r => r.id === id);
+      if (!req) return;
+      const canDelete = isAdmin || (currentUser && req.ownerUid === currentUser.uid);
+      if (!canDelete) {
+        alert("You can only delete your own posts.");
+        return;
+      }
+      try {
+        await requestsCollection.doc(id).delete();
+        if (commentUnsubs[id]) { commentUnsubs[id](); delete commentUnsubs[id]; }
+        delete commentsCache[id];
+        openCommentsFor.delete(id);
+      } catch (err) {
+        console.error(err);
+        alert('Could not delete post.');
+      }
+    }
+
+    function listenForRequests() {
+      requestsCollection.orderBy('createdAt', 'desc').onSnapshot(snapshot => {
+        requests = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        if (currentView === 'requests') renderRequests();
+      }, err => {
+        console.error('Firestore requests listener error:', err);
+      });
+    }
+
+    function timeAgo(ts) {
+      const diff = Math.max(0, Date.now() - ts);
+      const mins = Math.floor(diff / 60000);
+      if (mins < 1) return 'just now';
+      if (mins < 60) return `${mins}m ago`;
+      const hrs = Math.floor(mins / 60);
+      if (hrs < 24) return `${hrs}h ago`;
+      const days = Math.floor(hrs / 24);
+      if (days < 30) return `${days}d ago`;
+      return new Date(ts).toLocaleDateString();
+    }
+
+    function renderRequests() {
+      // preserve any in-progress comment drafts before wiping the DOM
+      const drafts = {};
+      requestsList.querySelectorAll('[id^="commentInput-"]').forEach(el => {
+        const id = el.id.replace('commentInput-', '');
+        if (el.value) drafts[id] = el.value;
+      });
+
+      if (!requests.length) {
+        requestsList.innerHTML = `
+          <div class="empty-state">
+            <h3>Nothing here yet</h3>
+            <p>Be the first to post something to the community.</p>
+          </div>`;
+        return;
+      }
+
+      requestsList.innerHTML = requests.map((r, i) => {
+        const canDelete = isAdmin || (currentUser && r.ownerUid === currentUser.uid);
+        const deleteBtnHtml = canDelete
+          ? `<button class="delete-btn" onclick="deleteRequest('${r.id}', event)" title="Delete" aria-label="Delete post"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button>`
+          : '';
+        const delay = Math.min(i, 20) * 0.035;
+        const isOpen = openCommentsFor.has(r.id);
+        const comments = commentsCache[r.id] || [];
+        const draft = drafts[r.id] || '';
+        return `
+        <div class="request-card" style="animation-delay:${delay}s">
+          <p class="request-desc">${escapeHtml(r.desc)}</p>
+          <div class="request-meta">
+            <span>${escapeHtml(r.ownerName || 'Unknown')}</span>
+            <span>&middot;</span>
+            <span>${timeAgo(r.createdAt)}</span>
+            <div style="flex:1;"></div>
+            <button class="comment-toggle" onclick="toggleComments('${r.id}')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+              <span id="commentCount-${r.id}">${comments.length > 0 ? comments.length : 'Comment'}</span>
+            </button>
+            ${deleteBtnHtml}
+          </div>
+          <div class="comments-section" id="comments-${r.id}" style="display:${isOpen ? 'block' : 'none'};">
+            <div class="comments-list" id="commentsList-${r.id}">${renderCommentsList(comments)}</div>
+            <div class="comment-input-row">
+              <input type="text" id="commentInput-${r.id}" value="${escapeHtml(draft)}" placeholder="Write a comment..." onkeydown="if(event.key==='Enter'){ postComment('${r.id}'); }" />
+              <button class="btn btn-primary comment-send" onclick="postComment('${r.id}')">Send</button>
+            </div>
+          </div>
+        </div>
+      `;
+      }).join('');
+    }
+
+    function renderCommentsList(comments) {
+      if (!comments.length) return `<p class="no-comments">No comments yet.</p>`;
+      return comments.map(c => `
+        <div class="comment">
+          <span class="comment-author">${escapeHtml(c.ownerName || 'Unknown')}</span>
+          <span class="comment-text">${escapeHtml(c.text)}</span>
+        </div>
+      `).join('');
+    }
+
+    function toggleComments(postId) {
+      const section = document.getElementById(`comments-${postId}`);
+      if (!section) return;
+      const willOpen = !openCommentsFor.has(postId);
+      if (willOpen) {
+        openCommentsFor.add(postId);
+        section.style.display = 'block';
+        subscribeToComments(postId);
+      } else {
+        openCommentsFor.delete(postId);
+        section.style.display = 'none';
+      }
+    }
+
+    function subscribeToComments(postId) {
+      if (commentUnsubs[postId]) return; // already subscribed
+      commentUnsubs[postId] = requestsCollection.doc(postId).collection('comments')
+        .orderBy('createdAt', 'asc')
+        .onSnapshot(snapshot => {
+          commentsCache[postId] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          const listEl = document.getElementById(`commentsList-${postId}`);
+          if (listEl) listEl.innerHTML = renderCommentsList(commentsCache[postId]);
+          const countEl = document.getElementById(`commentCount-${postId}`);
+          if (countEl) countEl.textContent = commentsCache[postId].length > 0 ? commentsCache[postId].length : 'Comment';
+        }, err => console.error('comments listener error', err));
+    }
+
+    async function postComment(postId) {
+      if (!requireLogin()) return;
+      const input = document.getElementById(`commentInput-${postId}`);
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = '';
+      try {
+        await requestsCollection.doc(postId).collection('comments').add({
+          text,
+          createdAt: Date.now(),
+          ownerUid: currentUser ? currentUser.uid : (isAdmin ? 'admin' : null),
+          ownerName: currentUser ? currentUser.displayName || currentUser.email.replace('@pinpost.local','') : (isAdmin ? 'Admin' : 'Unknown')
+        });
+      } catch (e) {
+        console.error(e);
+        alert('Could not post comment.');
+      }
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>
