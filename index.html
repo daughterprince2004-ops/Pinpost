@@ -1,0 +1,2473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#08080b" />
+  <title>AnonymousRXM</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      /* ---- palette: grayscale on black ---- */
+      --accent:        #e9e9ec;
+      --accent-hover:  #ffffff;
+      --accent-deep:   #5c5c62;
+      --accent-soft:   rgba(255,255,255,0.10);
+      --accent-ring:   rgba(255,255,255,0.22);
+
+      --bg:            #08080a;
+      --bg-solid:      rgba(8,8,10,0.97);
+      --surface:       #131313;
+      --surface-2:     #1b1b1c;
+      --surface-3:     #242425;
+
+      --line:          rgba(255,255,255,0.09);
+      --line-strong:   rgba(255,255,255,0.20);
+
+      --text:          #f3f3f4;
+      --text-2:        #b6b6b9;
+      --muted:         #7c7c80;
+      --danger:        #ff6b6b;
+      --ok:            #4ade80;
+
+      /* ---- type ---- */
+      --display: "Fraunces", "Iowan Old Style", Georgia, serif;
+      --body: "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+      /* ---- shape ---- */
+      --r-lg: 16px;
+      --r-md: 12px;
+      --r-sm: 10px;
+      --pill: 999px;
+
+      --shadow-1: 0 1px 2px rgba(0,0,0,0.5);
+      --shadow-2: 0 10px 30px rgba(0,0,0,0.55);
+      --shadow-3: 0 24px 60px rgba(0,0,0,0.7);
+
+      --s1: 4px;  --s2: 8px;  --s3: 12px; --s4: 16px;
+      --s5: 20px; --s6: 24px; --s7: 32px; --s8: 44px;
+
+      --ease: cubic-bezier(0.22, 1, 0.36, 1);
+      --fast: 0.18s;
+      --med:  0.28s;
+
+      --shell: 1440px;
+      --gutter: 28px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+
+    body {
+      font-family: var(--body);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      letter-spacing: -0.008em;
+    }
+
+    ::selection { background: var(--accent-soft); color: #fff; }
+
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.14);
+      border-radius: var(--pill);
+      border: 3px solid var(--bg);
+    }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.26); }
+
+    :focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+      border-radius: 6px;
+    }
+
+    /* ==========================================================
+       HEADER — centered masthead, shrinks on scroll
+       ========================================================== */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      /* Solid rather than blurred: backdrop-filter over a wall of
+         large images is a major memory cost on iPad Safari. */
+      background: var(--bg-solid);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .header-top {
+      max-width: var(--shell);
+      margin: 0 auto;
+      padding: var(--s5) var(--gutter) var(--s3);
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: start;
+      gap: var(--s4);
+      position: relative;
+      transition: padding var(--med) var(--ease);
+    }
+
+    .header-side { display: flex; align-items: center; gap: var(--s2); min-width: 0; padding-top: 1px; }
+    .header-side.right { justify-content: flex-end; }
+
+    /* --- wordmark --- */
+    .wordmark {
+      font-family: var(--display);
+      font-optical-sizing: auto;
+      font-weight: 700;
+      font-size: 38px;
+      line-height: 1;
+      letter-spacing: -0.025em;
+      color: var(--text);
+      background: none;
+      border: none;
+      padding: 0 var(--s2);
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+      transition: opacity var(--fast) var(--ease);
+    }
+    .wordmark:hover { opacity: 0.8; }
+    .wordmark .mark-accent { color: inherit; }
+
+    header.compact .header-top { padding-top: var(--s3); padding-bottom: var(--s2); }
+
+    /* --- search row (directly under the title, like Google) --- */
+    .header-search {
+      display: flex;
+      justify-content: center;
+      padding: 0 var(--gutter) var(--s4);
+    }
+
+    /* --- nav row --- */
+    /* --- header icon buttons (profile / community) --- */
+    .icon-btn.nav-icon {
+      background: var(--surface);
+      color: var(--text-2);
+      border-color: transparent;
+      width: 40px;
+      height: 40px;
+    }
+    .icon-btn.nav-icon svg { width: 18px; height: 18px; }
+    .icon-btn.nav-icon:hover { background: var(--surface-2); color: var(--text); }
+    .icon-btn.nav-icon.active { background: var(--text); color: var(--bg); }
+
+    /* --- segmented control --- */
+    .segmented {
+      display: inline-flex;
+      background: var(--surface);
+      border: none;
+      border-radius: var(--r-sm);
+      padding: 3px;
+      gap: 2px;
+      flex-shrink: 0;
+    }
+
+    .seg-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font: inherit;
+      font-family: var(--body);
+      font-size: 13.5px;
+      font-weight: 600;
+      padding: 7px 20px;
+      border-radius: var(--r-sm);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: color var(--fast) var(--ease), background var(--med) var(--ease);
+    }
+    .seg-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+    .seg-btn:hover { color: var(--text-2); }
+    .seg-btn.active { background: var(--text); color: var(--bg); }
+
+    /* --- search --- */
+    .search { position: relative; width: 100%; max-width: 560px; }
+
+    .search input {
+      width: 100%;
+      height: 46px;
+      padding: 0 var(--s5) 0 44px;
+      border-radius: var(--pill);
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--text);
+      font: inherit;
+      font-family: var(--body);
+      font-size: 14.5px;
+      outline: none;
+      transition: border-color var(--fast) var(--ease), background var(--fast) var(--ease), box-shadow var(--fast) var(--ease);
+    }
+    .search input::placeholder { color: var(--muted); }
+    .search input:hover { border-color: var(--line-strong); }
+    .search input:focus {
+      background: var(--surface-2);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 17px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      pointer-events: none;
+    }
+
+    /* ==========================================================
+       BUTTONS
+       ========================================================== */
+    .btn {
+      border: 1px solid transparent;
+      border-radius: var(--r-sm);
+      padding: 0 18px;
+      height: 40px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      font-family: var(--body);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background var(--fast) var(--ease), border-color var(--fast) var(--ease),
+                  color var(--fast) var(--ease), transform 0.12s var(--ease), opacity var(--fast);
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    .btn-primary { background: var(--accent); color: var(--bg); }
+    .btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
+
+    .btn-quiet {
+      background: var(--surface);
+      color: var(--text-2);
+      border-color: transparent;
+    }
+    .btn-quiet:hover:not(:disabled) { background: var(--surface-2); color: var(--text); }
+
+    .btn-plain {
+      background: transparent;
+      color: var(--muted);
+      border-color: transparent;
+      padding: 0 12px;
+    }
+    .btn-plain:hover:not(:disabled) { color: var(--text); background: var(--surface-2); }
+
+    .btn-sm { height: 34px; font-size: 13px; padding: 0 14px; }
+    .btn-block { width: 100%; }
+
+    /* --- avatar / profile --- */
+    .avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: #000;
+      color: #fff;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+    .avatar svg { width: 55%; height: 55%; }
+    .avatar-lg { width: 40px; height: 40px; }
+    .avatar-sm { width: 26px; height: 26px; background: var(--surface-3); color: var(--text-2); }
+
+    .profile-btn {
+      display: flex;
+      align-items: center;
+      gap: var(--s2);
+      background: var(--surface);
+      border: none;
+      border-radius: var(--r-sm);
+      padding: 4px 14px 4px 4px;
+      cursor: pointer;
+      color: var(--text);
+      font-family: var(--body);
+      font-size: 13.5px;
+      font-weight: 600;
+      transition: background var(--fast) var(--ease), border-color var(--fast) var(--ease);
+    }
+    .profile-btn:hover { background: var(--surface-2); border-color: var(--line-strong); }
+
+    .profile-name {
+      white-space: nowrap;
+      max-width: 100px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* mobile-only search toggle */
+    /* ==========================================================
+       PHOTO BOARD
+       Layout is computed in JS (see "Board masonry" below) rather
+       than CSS `columns:` — native multi-column rebalances every
+       column from scratch on every insertion, which is what was
+       making already-visible photos jump between columns as more
+       loaded in. Each tile gets an absolute x/y once and keeps it.
+       ========================================================== */
+    .board {
+      position: relative;
+      max-width: var(--shell);
+      margin: 0 auto;
+      padding: var(--s5) var(--gutter) 0;
+    }
+
+    .sentinel { height: 80px; }
+
+    .photo {
+      position: absolute;
+      top: 0;
+      left: 0;
+      border-radius: var(--r-lg);
+      overflow: hidden;
+      cursor: zoom-in;
+      background: var(--surface);
+      box-shadow: var(--shadow-1);
+      opacity: 0;
+      transition: opacity 0.4s var(--ease), box-shadow var(--med) var(--ease), transform 0.25s var(--ease);
+    }
+    .photo.in { opacity: 1; }
+
+    .photo:hover { box-shadow: var(--shadow-2); }
+
+    .photo img {
+      width: 100%;
+      display: block;
+      border-radius: var(--r-lg);
+      opacity: 0;
+      transition: opacity var(--med) var(--ease);
+    }
+    .photo img.loaded { opacity: 1; }
+
+    /* A plain overlay instead of a CSS filter on the image itself.
+       filter/scale on <img> forces iPad Safari to keep a second
+       rendered copy of every photo in GPU memory, which is what
+       makes thumbnails go black once memory runs out. */
+    .photo-veil {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(8,8,11,0.88) 0%, rgba(8,8,11,0.25) 45%, rgba(8,8,11,0.1) 100%);
+      opacity: 0;
+      transition: opacity var(--med) var(--ease);
+      pointer-events: none;
+      border-radius: var(--r-lg);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .photo:hover .photo-veil { opacity: 1; }
+    }
+
+    .photo-caption {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      padding: var(--s4);
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+      opacity: 0;
+      transition: opacity var(--med) var(--ease);
+      pointer-events: none;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .photo:hover .photo-caption { opacity: 1; }
+    }
+
+    .icon-btn {
+      background: rgba(10,10,14,0.75);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: var(--pill);
+      width: 32px;
+      height: 32px;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      transition: background var(--fast) var(--ease), border-color var(--fast) var(--ease), transform 0.12s var(--ease);
+    }
+    .icon-btn svg { width: 15px; height: 15px; pointer-events: none; }
+    .icon-btn:hover { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+    .icon-btn:active { transform: scale(0.92); }
+
+    .icon-btn-quiet {
+      background: transparent;
+      border-color: transparent;
+      color: var(--muted);
+    }
+    .icon-btn-quiet:hover { background: var(--surface-2); border-color: transparent; color: var(--danger); }
+
+    .broken {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--s2);
+      padding: var(--s7) var(--s4);
+      min-height: 150px;
+      color: var(--muted);
+      font-size: 12.5px;
+      text-align: center;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
+    }
+    .broken svg { width: 26px; height: 26px; opacity: 0.5; }
+    .broken button {
+      background: none;
+      border: none;
+      color: var(--accent);
+      font: inherit;
+      font-family: var(--body);
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .photo.is-broken img,
+    .photo.is-broken .photo-caption,
+    .photo.is-broken .photo-veil { display: none; }
+    .photo.is-broken .broken { display: flex; }
+    .photo.is-broken { cursor: default; box-shadow: none; }
+
+    .skeleton {
+      position: absolute;
+      top: 0;
+      left: 0;
+      border-radius: var(--r-lg);
+      background: linear-gradient(100deg, var(--surface) 30%, var(--surface-2) 50%, var(--surface) 70%);
+      background-size: 220% 100%;
+      animation: shimmer 1.4s ease-in-out infinite;
+    }
+    @keyframes shimmer {
+      0%   { background-position: 140% 0; }
+      100% { background-position: -140% 0; }
+    }
+
+    /* ==========================================================
+       EMPTY STATES
+       ========================================================== */
+    .empty {
+      width: 100%;
+      text-align: center;
+      padding: var(--s8) var(--s5);
+    }
+    .empty h3 {
+      font-family: var(--body);
+      font-weight: 700;
+      font-size: 22px;
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+    }
+    .empty p { color: var(--muted); font-size: 14px; line-height: 1.6; max-width: 340px; margin: 0 auto; }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    /* ==========================================================
+       COMMUNITY
+       ========================================================== */
+    .community {
+      max-width: 620px;
+      margin: 0 auto;
+      padding: var(--s7) 14px 96px;
+      animation: fadeIn 0.3s var(--ease);
+    }
+
+    .community-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: var(--s2) var(--s4);
+      padding-bottom: var(--s5);
+      margin-bottom: var(--s5);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .community-head h1 {
+      font-family: var(--body);
+      font-weight: 700;
+      font-size: 20px;
+      letter-spacing: -0.015em;
+    }
+
+    .community-head .count {
+      font-size: 12.5px;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .composer {
+      display: grid;
+      grid-template-columns: 40px 1fr;
+      gap: var(--s3);
+      padding-bottom: var(--s5);
+      margin-bottom: var(--s5);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .composer textarea {
+      width: 100%;
+      border: none;
+      background: transparent;
+      color: var(--text);
+      font-family: var(--body);
+      font-size: 15.5px;
+      line-height: 1.55;
+      resize: none;
+      min-height: 40px;
+      outline: none;
+      padding: 8px 0 0;
+      overflow: hidden;
+    }
+    .composer textarea::placeholder { color: var(--muted); }
+
+    .composer-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--s3);
+      margin-top: var(--s3);
+    }
+
+    .char-count {
+      font-size: 12px;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+    }
+    .char-count.over { color: var(--danger); }
+
+    .posts { display: flex; flex-direction: column; }
+
+    .post {
+      display: grid;
+      grid-template-columns: 40px 1fr;
+      gap: var(--s3);
+      padding: var(--s5) 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .post:last-child { border-bottom: none; }
+
+    .post-head {
+      display: flex;
+      align-items: center;
+      gap: var(--s2);
+      margin-bottom: 5px;
+      min-height: 26px;
+    }
+
+    .post-author { font-size: 12.5px; font-weight: 500; color: var(--muted); letter-spacing: 0.005em; }
+    .post-time { font-size: 12.5px; color: var(--muted); }
+    .dot { color: var(--muted); font-size: 11px; }
+    .post-head .spacer { flex: 1; }
+
+    .post-body {
+      font-size: 15.5px;
+      line-height: 1.6;
+      font-weight: 500;
+      color: var(--text);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .post-foot {
+      display: flex;
+      align-items: center;
+      gap: var(--s1);
+      margin-top: var(--s3);
+      margin-left: -10px;
+    }
+
+    .action {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-family: var(--body);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 6px 10px;
+      border-radius: var(--r-sm);
+      transition: color var(--fast) var(--ease), background var(--fast) var(--ease);
+    }
+    .action svg { width: 15px; height: 15px; }
+    .action:hover { color: var(--text); background: var(--surface-2); }
+    .action.on { color: var(--text); }
+
+    .comments {
+      margin-top: var(--s4);
+      padding-top: var(--s4);
+      border-top: 1px solid var(--line);
+      animation: fadeIn 0.22s var(--ease);
+    }
+
+    .comment-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--s2);
+      margin-bottom: var(--s4);
+      max-height: 260px;
+      overflow-y: auto;
+    }
+
+    .comment {
+      display: grid;
+      grid-template-columns: 26px 1fr;
+      gap: var(--s1);
+      align-items: start;
+    }
+
+    .comment-body { font-size: 13.5px; line-height: 1.5; }
+    .comment-author { font-weight: 500; color: var(--muted); margin-right: 4px; }
+    .comment-text { color: var(--text); word-break: break-word; }
+    .comment-empty { color: var(--muted); font-size: 13px; padding: 2px 0; }
+
+    .comment-form {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: var(--s2);
+      align-items: center;
+    }
+
+    .comment-form input {
+      width: 100%;
+      height: 36px;
+      padding: 0 14px;
+      border-radius: var(--r-sm);
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--text);
+      font-family: var(--body);
+      font-size: 13.5px;
+      outline: none;
+      transition: border-color var(--fast) var(--ease), box-shadow var(--fast) var(--ease), background var(--fast) var(--ease);
+    }
+    .comment-form input::placeholder { color: var(--muted); }
+    .comment-form input:hover { border-color: var(--line-strong); }
+    .comment-form input:focus {
+      background: var(--surface-2);
+    }
+
+    /* ==========================================================
+       MODALS
+       ========================================================== */
+    .scrim {
+      position: fixed;
+      inset: 0;
+      background: rgba(6,5,9,0.55);
+      backdrop-filter: blur(16px) saturate(140%);
+      -webkit-backdrop-filter: blur(16px) saturate(140%);
+      z-index: 200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: var(--s5);
+      opacity: 0;
+      transition: opacity var(--med) var(--ease);
+    }
+    .scrim.open { display: flex; opacity: 1; }
+
+    .sheet {
+      background: var(--surface);
+      border: none;
+      border-radius: var(--r-lg);
+      width: 100%;
+      max-width: 420px;
+      box-shadow: var(--shadow-3);
+      max-height: 88vh;
+      overflow-y: auto;
+      transform: translateY(12px) scale(0.98);
+      opacity: 0;
+      transition: transform var(--med) var(--ease), opacity var(--med) var(--ease);
+    }
+    .scrim.open .sheet { transform: none; opacity: 1; }
+
+    .sheet-wide { max-width: 480px; }
+
+    .sheet-head { padding: var(--s6) var(--s6) 0; text-align: center; }
+    .sheet-head.left { text-align: left; }
+
+    .sheet-head h2 {
+      font-family: var(--body);
+      font-weight: 700;
+      font-size: 25px;
+      letter-spacing: -0.025em;
+      margin-bottom: 7px;
+    }
+
+    .sheet-head p { font-size: 13.5px; color: var(--muted); line-height: 1.55; }
+
+    .sheet-body { padding: var(--s6); }
+    .sheet-foot {
+      display: flex;
+      gap: var(--s2);
+      justify-content: flex-end;
+      padding: 0 var(--s6) var(--s6);
+    }
+
+    .sheet-note {
+      border-top: 1px solid var(--line);
+      padding: var(--s4) var(--s6);
+      text-align: center;
+      font-size: 12.5px;
+      color: var(--muted);
+    }
+    .sheet-note button {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-family: var(--body);
+      font-size: 12.5px;
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      transition: color var(--fast) var(--ease);
+    }
+    .sheet-note button:hover { color: var(--accent-hover); }
+
+    .field { margin-bottom: var(--s4); }
+    .field:last-child { margin-bottom: 0; }
+
+    .field label {
+      display: block;
+      font-size: 12.5px;
+      font-weight: 600;
+      margin-bottom: 7px;
+      color: var(--text-2);
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      height: 44px;
+      padding: 0 14px;
+      border-radius: var(--r-sm);
+      border: 1px solid var(--line);
+      background: var(--surface-2);
+      color: var(--text);
+      font-family: var(--body);
+      font-size: 14.5px;
+      outline: none;
+      transition: border-color var(--fast) var(--ease), box-shadow var(--fast) var(--ease), background var(--fast) var(--ease);
+    }
+    .field textarea { height: auto; padding: 12px 14px; min-height: 80px; resize: vertical; }
+
+    .field select {
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237e7890' stroke-width='2' stroke-linecap='round'%3e%3cpath d='M6 9l6 6 6-6'/%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      background-size: 18px;
+      padding-right: 38px;
+      cursor: pointer;
+    }
+    .field select option { background: var(--surface-2); color: var(--text); }
+
+    .field input::placeholder,
+    .field textarea::placeholder { color: var(--muted); }
+
+    .field input:hover:not(:read-only),
+    .field select:hover,
+    .field textarea:hover { border-color: var(--line-strong); }
+
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      background: var(--surface-3);
+    }
+
+    .field input:read-only { color: var(--muted); cursor: default; background: var(--surface); }
+
+    .field-hint { font-size: 12px; color: var(--muted); line-height: 1.55; margin-top: 7px; }
+
+    .msg { font-size: 12.5px; line-height: 1.5; margin-top: var(--s3); min-height: 1px; }
+    .msg.error { color: var(--danger); }
+    .msg.ok { color: var(--ok); }
+
+    .divider { height: 1px; background: var(--line); margin: var(--s5) 0; }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--muted);
+      margin-bottom: var(--s3);
+    }
+
+    .my-posts-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--s2);
+      max-height: 50vh;
+      overflow-y: auto;
+    }
+
+    .my-post-row {
+      display: grid;
+      grid-template-columns: 48px 1fr auto;
+      align-items: center;
+      gap: var(--s3);
+      padding: var(--s2);
+      border-radius: var(--r-sm);
+      transition: background var(--fast) var(--ease);
+    }
+    .my-post-row:hover { background: var(--surface-2); }
+
+    .my-post-thumb {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--r-sm);
+      object-fit: cover;
+      background: var(--surface-3);
+      flex-shrink: 0;
+    }
+
+    .my-post-title {
+      font-size: 13.5px;
+      color: var(--text-2);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .dropzone {
+      border: 1px dashed var(--line-strong);
+      border-radius: var(--r-md);
+      padding: var(--s7) var(--s4);
+      text-align: center;
+      color: var(--muted);
+      font-size: 13.5px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      background: var(--surface-2);
+      transition: background var(--fast) var(--ease), border-color var(--fast) var(--ease);
+    }
+    .dropzone:hover { background: var(--surface-3); }
+    .dropzone.dragging { background: var(--accent-soft); border-color: var(--accent); }
+    .dropzone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    .dropzone svg { width: 22px; height: 22px; opacity: 0.55; margin-bottom: 10px; }
+
+    .preview {
+      max-height: 180px;
+      max-width: 100%;
+      border-radius: var(--r-sm);
+      display: none;
+      margin: 0 auto;
+      object-fit: cover;
+    }
+
+    .or-line {
+      display: flex;
+      align-items: center;
+      gap: var(--s3);
+      margin: var(--s4) 0;
+      color: var(--muted);
+      font-size: 11.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+    }
+    .or-line::before, .or-line::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+
+    /* ==========================================================
+       LIGHTBOX / FAB / TOASTS
+       ========================================================== */
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      background: rgba(6,5,9,0.65);
+      backdrop-filter: blur(20px) saturate(140%);
+      -webkit-backdrop-filter: blur(20px) saturate(140%);
+      z-index: 300;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: var(--s6);
+      opacity: 0;
+      transition: opacity var(--med) var(--ease);
+    }
+    .lightbox.open { display: flex; opacity: 1; }
+
+    .lightbox-frame {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 100%;
+    }
+
+    .lightbox img {
+      max-width: 100%;
+      max-height: 82vh;
+      border-radius: var(--r-md);
+      box-shadow: var(--shadow-3);
+      display: block;
+    }
+
+    .lightbox-info {
+      display: flex;
+      align-items: baseline;
+      gap: var(--s2);
+      margin-top: var(--s4);
+      max-width: 90vw;
+      color: var(--text);
+      font-size: 14px;
+    }
+    .lightbox-title { font-weight: 600; }
+    .lightbox-by { color: var(--muted); font-size: 13px; }
+
+    .fab {
+      position: fixed;
+      bottom: var(--s6);
+      right: calc(var(--s6) + 22px);
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      border: none;
+      background: #000;
+      color: #fff;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      box-shadow: var(--shadow-2);
+      z-index: 90;
+      transition: background var(--fast) var(--ease), transform 0.14s var(--ease), box-shadow var(--med) var(--ease);
+    }
+    .fab:hover { background: #161616; transform: translateY(-2px); }
+    .fab:active { transform: scale(0.94); }
+    .fab svg { width: 24px; height: 24px; }
+
+    .toasts {
+      position: fixed;
+      bottom: var(--s6);
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 400;
+      display: flex;
+      flex-direction: column;
+      gap: var(--s2);
+      align-items: center;
+      pointer-events: none;
+      width: 100%;
+      padding: 0 var(--s4);
+    }
+
+    .toast {
+      background: var(--surface-2);
+      border: 1px solid var(--line-strong);
+      color: var(--text);
+      padding: 11px 18px;
+      border-radius: var(--r-sm);
+      box-shadow: var(--shadow-2);
+      font-size: 13.5px;
+      font-weight: 600;
+      max-width: 400px;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(8px);
+      animation: toastIn 0.26s var(--ease) forwards;
+    }
+    .toast.error { border-color: rgba(255,107,138,0.5); }
+    .toast.ok { border-color: rgba(74,222,128,0.4); }
+    .toast.leaving { animation: toastOut 0.22s var(--ease) forwards; }
+
+    @keyframes toastIn  { to { opacity: 1; transform: translateY(0); } }
+    @keyframes toastOut { to { opacity: 0; transform: translateY(8px); } }
+
+    /* ==========================================================
+       RESPONSIVE
+       ========================================================== */
+    @media (max-width: 820px) {
+      :root { --gutter: 16px; }
+
+      .wordmark { font-size: 30px; }
+
+      .header-top { padding: var(--s4) var(--gutter) var(--s2); }
+      .profile-name { display: none; }
+      .profile-btn { padding: 4px; }
+    }
+
+    @media (max-width: 640px) {
+      .board { padding-top: var(--s4); }
+      .photo { border-radius: var(--r-md); }
+      .photo img, .photo-veil { border-radius: var(--r-md); }
+      .photo-caption { display: none; }
+
+      .community { padding-top: var(--s5); }
+      .composer, .post { grid-template-columns: 32px 1fr; gap: 10px; }
+      .avatar-lg { width: 32px; height: 32px; }
+      .community-head h1 { font-size: 17px; }
+
+      .sheet-head { padding: var(--s5) var(--s5) 0; }
+      .sheet-head h2 { font-size: 22px; }
+      .sheet-body { padding: var(--s5); }
+      .sheet-foot { padding: 0 var(--s5) var(--s5); }
+      .sheet-note { padding: var(--s3) var(--s5); }
+
+      .fab { bottom: var(--s4); right: calc(var(--s4) + 16px); width: 50px; height: 50px; }
+      .fab svg { width: 21px; height: 21px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+
+  <!-- Firebase SDK (compat build — works with plain script tags) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+</head>
+<body>
+
+  <header id="siteHeader">
+    <div class="header-top">
+      <div class="header-side left">
+        <button class="icon-btn nav-icon" id="loginBtn" onclick="openAuth('login')" title="Log in" aria-label="Log in">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg>
+        </button>
+        <button class="profile-btn" id="profileBtn" onclick="openProfile()" style="display:none;">
+          <span class="avatar" id="profileAvatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg></span>
+          <span class="profile-name" id="profileNameLabel"></span>
+        </button>
+      </div>
+
+      <button class="wordmark" onclick="switchView('board')" aria-label="AnonymousRXM home">
+        Anonymous<span class="mark-accent">RXM</span>
+      </button>
+
+      <div class="header-side right">
+        <button class="icon-btn nav-icon" id="communityToggle" onclick="toggleCommunity()" title="Community" aria-label="Toggle community view" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-3.8 7.07 8.5 8.5 0 0 1-9.44.55L3 21l1.9-5.7a8.38 8.38 0 0 1 .74-8.4A8.5 8.5 0 0 1 21 11.5z"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="header-search">
+      <div class="search">
+        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg>
+        <input type="search" id="searchInput" placeholder="Search photos" aria-label="Search photos" />
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== Board ===== -->
+  <main class="board" id="board"></main>
+  <div class="sentinel" id="sentinel"></div>
+
+  <!-- ===== Community ===== -->
+  <main class="community" id="communityPage" style="display:none;">
+    <div class="community-head">
+      <h1>Community</h1>
+    </div>
+
+    <div class="composer">
+      <span class="avatar avatar-lg" id="composerAvatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg></span>
+      <div>
+        <textarea id="postInput" rows="1" maxlength="600" placeholder="Share something with the board"></textarea>
+        <div class="composer-foot">
+          <span class="char-count" id="charCount"></span>
+          <button class="btn btn-primary btn-sm" id="postBtn" onclick="createPost()" disabled>Post</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="posts" id="postsList"></div>
+    <div class="sentinel" id="postsSentinel"></div>
+  </main>
+
+  <!-- ===== My posts (page) ===== -->
+  <main class="community" id="myPostsPage" style="display:none;">
+    <div class="community-head">
+      <h1>My posts</h1>
+      <button class="btn btn-plain btn-sm" onclick="switchView('board')">Back to board</button>
+    </div>
+    <p class="field-hint" style="margin-bottom:var(--s5);">Photos you've posted. Delete any of them here.</p>
+    <div class="my-posts-list" id="myPostsList" style="max-height:none;"></div>
+  </main>
+
+  <!-- ===== Log in / Sign up ===== -->
+  <div class="scrim" id="authModal" onclick="if(event.target===this) closeAuth()" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+    <div class="sheet">
+      <div class="sheet-head">
+        <h2 id="authTitle">Welcome back</h2>
+        <p id="authSubtitle">Log in to post photos and join the conversation.</p>
+      </div>
+
+      <div class="sheet-body">
+        <div class="segmented" style="width:100%; margin-bottom:20px;">
+          <button class="seg-btn active" id="tabLogin" style="flex:1;" onclick="setAuthMode('login')">Log in</button>
+          <button class="seg-btn" id="tabSignup" style="flex:1;" onclick="setAuthMode('signup')">Sign up</button>
+        </div>
+
+        <div class="field">
+          <label for="authUsername">Username</label>
+          <input type="text" id="authUsername" placeholder="anonymous" autocapitalize="off" autocorrect="off" autocomplete="username" />
+        </div>
+
+        <div class="field">
+          <label for="authPassword">Password</label>
+          <input type="password" id="authPassword" placeholder="At least 6 characters" autocomplete="current-password" />
+        </div>
+
+        <p class="msg error" id="authError"></p>
+
+        <button class="btn btn-primary btn-block" id="authSubmit" onclick="submitAuth()" style="margin-top:20px;">Log in</button>
+      </div>
+
+      <div class="sheet-note">
+        <button onclick="openAdmin()">Admin access</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Admin ===== -->
+  <div class="scrim" id="adminModal" onclick="if(event.target===this) closeAdmin()" role="dialog" aria-modal="true">
+    <div class="sheet">
+      <div class="sheet-head">
+        <h2>Admin access</h2>
+        <p>Enter the admin password to manage all content.</p>
+      </div>
+      <div class="sheet-body">
+        <div class="field">
+          <label for="adminPassword">Admin password</label>
+          <input type="password" id="adminPassword" placeholder="••••••••" />
+        </div>
+        <p class="msg error" id="adminError"></p>
+        <button class="btn btn-primary btn-block" onclick="submitAdmin()" style="margin-top:20px;">Continue</button>
+        <button class="btn btn-plain btn-block" onclick="closeAdmin()" style="margin-top:8px;">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Profile ===== -->
+  <div class="scrim" id="profileModal" onclick="if(event.target===this) closeProfile()" role="dialog" aria-modal="true">
+    <div class="sheet">
+      <div class="sheet-head left">
+        <h2>Your account</h2>
+      </div>
+
+      <div class="sheet-body">
+        <div class="field">
+          <label for="profileUsername">Username</label>
+          <input type="text" id="profileUsername" readonly />
+        </div>
+
+        <div class="divider"></div>
+        <button class="btn btn-quiet btn-block" onclick="goToMyPosts()">My posts</button>
+
+        <div id="passwordSection">
+          <div class="divider"></div>
+          <p class="section-label">Change password</p>
+          <div class="field">
+            <label for="currentPassword">Current password</label>
+            <input type="password" id="currentPassword" placeholder="••••••••" autocomplete="current-password" />
+          </div>
+          <div class="field">
+            <label for="newPassword">New password</label>
+            <input type="password" id="newPassword" placeholder="At least 6 characters" autocomplete="new-password" />
+          </div>
+          <p class="field-hint">Passwords are stored encrypted, so no one can read your old one — set a new one instead.</p>
+          <p class="msg" id="passwordMsg"></p>
+          <button class="btn btn-quiet btn-block" id="passwordBtn" onclick="changePassword()" style="margin-top:16px;">Update password</button>
+        </div>
+      </div>
+
+      <div class="sheet-foot" style="justify-content:space-between;">
+        <button class="btn btn-plain" onclick="closeProfile()">Close</button>
+        <button class="btn btn-plain" style="color:var(--danger);" onclick="logOut(); closeProfile();">Log out</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Add photo ===== -->
+  <div class="scrim" id="photoModal" onclick="if(event.target===this) closePhotoModal()" role="dialog" aria-modal="true">
+    <div class="sheet sheet-wide">
+      <div class="sheet-head left">
+        <h2>Add photo</h2>
+        <p>Everyone who visits the board can see what you post.</p>
+      </div>
+
+      <div class="sheet-body">
+        <div class="dropzone" id="dropzone">
+          <input type="file" id="fileInput" accept="image/*" aria-label="Choose an image" />
+          <div id="dropText">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
+            <div>Drop an image here, or click to choose one</div>
+          </div>
+          <img class="preview" id="preview" alt="Preview of the photo you selected" />
+        </div>
+        <p class="field-hint">Large images are compressed automatically before saving.</p>
+
+        <div class="or-line">or</div>
+
+        <div class="field">
+          <label for="urlInput">Image link</label>
+          <input type="url" id="urlInput" placeholder="https://i.imgur.com/photo.jpg" />
+        </div>
+
+        <div class="field">
+          <label for="titleInput">Title</label>
+          <input type="text" id="titleInput" placeholder="Untitled photo" maxlength="80" />
+        </div>
+
+        <div class="field">
+          <label for="catInput">Category</label>
+          <select id="catInput">
+            <option>Home</option>
+            <option>Fashion</option>
+            <option>Art</option>
+            <option>Travel</option>
+            <option>Food</option>
+            <option>Nature</option>
+            <option>Technology</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="sheet-foot">
+        <button class="btn btn-plain" onclick="closePhotoModal()">Cancel</button>
+        <button class="btn btn-primary" id="savePhotoBtn" onclick="savePhoto()">Post photo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Lightbox ===== -->
+  <div class="lightbox" id="lightbox" onclick="if(event.target===this) closeLightbox()">
+    <div class="lightbox-frame">
+      <img id="lightboxImg" src="" alt="" />
+      <div class="lightbox-info">
+        <span class="lightbox-title" id="lightboxTitle"></span>
+        <span class="lightbox-by" id="lightboxBy"></span>
+      </div>
+    </div>
+  </div>
+
+  <button class="fab" id="createFab" onclick="openPhotoModal()" title="Add photo" aria-label="Add photo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+  </button>
+
+  <div class="toasts" id="toasts"></div>
+  <script>
+    /* ==========================================================
+       Firebase
+       Collection names ("pins", "requests") and the account email
+       suffix are unchanged, so existing data and logins keep working.
+       ========================================================== */
+    const firebaseConfig = {
+      apiKey: "AIzaSyACid5zy30JWgJz-5FNDzxyysyqYQUdvu8",
+      authDomain: "pinpost-app.firebaseapp.com",
+      projectId: "pinpost-app",
+      appId: "1:292350218654:web:83574ad58896850a4c068f"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+    const photosCollection = db.collection('pins');
+    const postsCollection  = db.collection('requests');
+
+    const ADMIN_PASSWORD = "Daughter231@";
+    const AVATAR_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg>';
+    const ADMIN_FLAG_KEY = "anonymousrxm_is_admin";
+    const EMAIL_SUFFIX   = "@pinpost.local";
+
+    // How many photos enter the DOM at once. Keeping this low is what
+    // stops iPad Safari running out of image-decode memory and painting
+    // black tiles — it has a hard per-tab budget for decoded bitmaps.
+    const BATCH_SIZE = 12;
+    const POSTS_BATCH_SIZE = 8;
+
+    // Photos are fetched from Firestore a page at a time instead of the
+    // whole collection at once — an unlimited query has to download every
+    // photo's full image data before it fires even once, which is what was
+    // making the board feel slow and then dump everything in together.
+    const PAGE_SIZE = 12;
+
+    /* ---------- state ---------- */
+    let photos = [];
+    let photosLoaded = false;
+    let firstPageDocs = [];   // live page from the real-time listener
+    let olderPhotos = [];     // additional pages fetched on scroll
+    let lastPhotoDoc = null;  // Firestore cursor for the next page
+    let hasMorePhotos = true;
+    let loadingMorePhotos = false;
+    let posts = [];
+    let currentView = 'board';
+    let currentSearch = '';
+    let currentUser = null;
+    let isAdmin = false;
+    let authMode = 'login';
+
+    let visiblePhotos = [];   // current filtered list
+    let shownCount = 0;       // how many of them are in the DOM
+    let shownPostsCount = 0;  // how many community posts are in the DOM
+
+    const openComments = new Set();
+    const commentsCache = {};
+    const commentUnsubs = {};
+
+    /* ---------- elements ---------- */
+    const $ = id => document.getElementById(id);
+
+    const siteHeader     = $('siteHeader');
+    const board          = $('board');
+    const sentinel       = $('sentinel');
+    const communityPage  = $('communityPage');
+    const postsList      = $('postsList');
+    const postsSentinel  = $('postsSentinel');
+    const communityToggle = $('communityToggle');
+    const createFab      = $('createFab');
+    const searchInput    = $('searchInput');
+
+    const composerAvatar = $('composerAvatar');
+    const postInput      = $('postInput');
+    const charCount      = $('charCount');
+    const postBtn        = $('postBtn');
+
+    const photoModal     = $('photoModal');
+    const fileInput      = $('fileInput');
+    const dropzone       = $('dropzone');
+    const dropText       = $('dropText');
+    const preview        = $('preview');
+    const urlInput       = $('urlInput');
+    const titleInput     = $('titleInput');
+    const catInput       = $('catInput');
+    const savePhotoBtn   = $('savePhotoBtn');
+
+    const lightbox       = $('lightbox');
+    const lightboxImg    = $('lightboxImg');
+    const lightboxTitle  = $('lightboxTitle');
+    const lightboxBy     = $('lightboxBy');
+
+    const authModal      = $('authModal');
+    const authTitle      = $('authTitle');
+    const authSubtitle   = $('authSubtitle');
+    const tabLogin       = $('tabLogin');
+    const tabSignup      = $('tabSignup');
+    const authUsername   = $('authUsername');
+    const authPassword   = $('authPassword');
+    const authError      = $('authError');
+    const authSubmit     = $('authSubmit');
+
+    const loginBtn       = $('loginBtn');
+    const profileBtn     = $('profileBtn');
+    const profileAvatar  = $('profileAvatar');
+    const profileNameLabel = $('profileNameLabel');
+
+    const adminModal     = $('adminModal');
+    const adminPassword  = $('adminPassword');
+    const adminError     = $('adminError');
+
+    const profileModal   = $('profileModal');
+    const profileUsername = $('profileUsername');
+    const passwordSection = $('passwordSection');
+    const currentPassword = $('currentPassword');
+    const newPassword     = $('newPassword');
+    const passwordMsg     = $('passwordMsg');
+    const passwordBtn     = $('passwordBtn');
+
+    const myPostsPage    = $('myPostsPage');
+    const myPostsList    = $('myPostsList');
+
+    /* ---------- boot ---------- */
+    renderPhotos();
+    listenForPhotos();
+    listenForPosts();
+    initAuth();
+    updateComposerState();
+    watchScroll();
+    watchSentinel();
+    watchPostsSentinel();
+
+    /* ==========================================================
+       Header behaviour
+       ========================================================== */
+    function watchScroll() {
+      let ticking = false;
+      const apply = () => {
+        siteHeader.classList.toggle('compact', window.scrollY > 24);
+        ticking = false;
+      };
+      apply();
+      window.addEventListener('scroll', () => {
+        if (!ticking) { ticking = true; requestAnimationFrame(apply); }
+      }, { passive: true });
+    }
+
+    /* ==========================================================
+       Input wiring
+       ========================================================== */
+    fileInput.addEventListener('change', handleFile);
+    dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('dragging'); });
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragging'));
+    dropzone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropzone.classList.remove('dragging');
+      if (e.dataTransfer.files.length) {
+        fileInput.files = e.dataTransfer.files;
+        handleFile();
+      }
+    });
+
+    urlInput.addEventListener('input', () => {
+      const url = urlInput.value.trim();
+      if (/^https?:\/\/.+/.test(url)) {
+        preview.src = url;
+        preview.style.display = 'block';
+        dropText.style.display = 'none';
+      }
+    });
+
+    searchInput.addEventListener('input', e => {
+      currentSearch = e.target.value.trim().toLowerCase();
+      renderPhotos();
+    });
+
+    postInput.addEventListener('input', () => {
+      postInput.style.height = 'auto';
+      postInput.style.height = postInput.scrollHeight + 'px';
+      updateComposerState();
+    });
+
+    postInput.addEventListener('keydown', e => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') createPost();
+    });
+
+    document.addEventListener('keydown', e => {
+      if (e.key !== 'Escape') return;
+      if (lightbox.classList.contains('open')) return closeLightbox();
+      if (photoModal.classList.contains('open')) return closePhotoModal();
+      if (authModal.classList.contains('open')) return closeAuth();
+      if (adminModal.classList.contains('open')) return closeAdmin();
+      if (profileModal.classList.contains('open')) return closeProfile();
+    });
+
+    [authUsername, authPassword].forEach(el =>
+      el.addEventListener('keydown', e => { if (e.key === 'Enter') submitAuth(); })
+    );
+    adminPassword.addEventListener('keydown', e => { if (e.key === 'Enter') submitAdmin(); });
+
+    /* ==========================================================
+       Auth
+       ========================================================== */
+    function usernameToEmail(username) {
+      return username.trim().toLowerCase().replace(/[^a-z0-9_.-]/g, '') + EMAIL_SUFFIX;
+    }
+
+    function displayName() {
+      if (isAdmin) return 'Admin';
+      if (!currentUser) return '';
+      return currentUser.displayName || currentUser.email.replace(EMAIL_SUFFIX, '');
+    }
+
+    function initAuth() {
+      isAdmin = sessionStorage.getItem(ADMIN_FLAG_KEY) === 'true';
+      auth.onAuthStateChanged(user => {
+        currentUser = user;
+        updateAuthUI();
+        renderPhotos();
+        if (currentView === 'community') renderPosts();
+      });
+      updateAuthUI();
+    }
+
+    function updateAuthUI() {
+      const name = displayName();
+      if (isAdmin || currentUser) {
+        profileNameLabel.textContent = name;
+        loginBtn.style.display = 'none';
+        profileBtn.style.display = 'flex';
+      } else {
+        loginBtn.style.display = 'grid';
+        profileBtn.style.display = 'none';
+      }
+      updateComposerState();
+    }
+
+    function openAuth(mode = 'login') {
+      setAuthMode(mode);
+      authUsername.value = '';
+      authPassword.value = '';
+      authError.textContent = '';
+      authModal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      setTimeout(() => authUsername.focus(), 120);
+    }
+
+    function closeAuth() {
+      authModal.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    function setAuthMode(mode) {
+      authMode = mode;
+      const login = mode === 'login';
+      tabLogin.classList.toggle('active', login);
+      tabSignup.classList.toggle('active', !login);
+      authTitle.textContent = login ? 'Welcome back' : 'Create your account';
+      authSubtitle.textContent = login
+        ? 'Log in to post photos and join the conversation.'
+        : 'Pick a username and password. No email needed.';
+      authSubmit.textContent = login ? 'Log in' : 'Create account';
+      authPassword.setAttribute('autocomplete', login ? 'current-password' : 'new-password');
+      authError.textContent = '';
+    }
+
+    async function submitAuth() {
+      const username = authUsername.value.trim();
+      const password = authPassword.value;
+      authError.textContent = '';
+
+      if (!username) { authError.textContent = 'Enter a username.'; return; }
+      if (!password) { authError.textContent = 'Enter a password.'; return; }
+      if (password.length < 6) { authError.textContent = 'Passwords need at least 6 characters.'; return; }
+
+      const email = usernameToEmail(username);
+      const label = authSubmit.textContent;
+      authSubmit.textContent = authMode === 'signup' ? 'Creating account…' : 'Logging in…';
+      authSubmit.disabled = true;
+
+      try {
+        if (authMode === 'signup') {
+          const cred = await auth.createUserWithEmailAndPassword(email, password);
+          await cred.user.updateProfile({ displayName: username });
+          currentUser = auth.currentUser;
+          updateAuthUI();
+          showToast('Account created. Welcome.', 'ok');
+        } else {
+          await auth.signInWithEmailAndPassword(email, password);
+        }
+        isAdmin = false;
+        sessionStorage.removeItem(ADMIN_FLAG_KEY);
+        closeAuth();
+      } catch (e) {
+        console.error(e);
+        if (e.code === 'auth/email-already-in-use') {
+          authError.textContent = 'That username is taken. Try another one.';
+        } else if (['auth/invalid-credential','auth/wrong-password','auth/user-not-found'].includes(e.code)) {
+          authError.textContent = 'That username and password don\u2019t match.';
+        } else if (e.code === 'auth/network-request-failed') {
+          authError.textContent = 'No connection. Check your network and try again.';
+        } else {
+          authError.textContent = 'Something went wrong. Try again.';
+        }
+      } finally {
+        authSubmit.textContent = label;
+        authSubmit.disabled = false;
+      }
+    }
+
+    function logOut() {
+      isAdmin = false;
+      sessionStorage.removeItem(ADMIN_FLAG_KEY);
+      auth.signOut();
+      updateAuthUI();
+      renderPhotos();
+      if (currentView === 'community') renderPosts();
+    }
+
+    function requireLogin() {
+      if (!currentUser && !isAdmin) { openAuth('login'); return false; }
+      return true;
+    }
+
+    /* ---------- admin ---------- */
+    function openAdmin() {
+      closeAuth();
+      adminPassword.value = '';
+      adminError.textContent = '';
+      adminModal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      setTimeout(() => adminPassword.focus(), 120);
+    }
+
+    function closeAdmin() {
+      adminModal.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    function submitAdmin() {
+      if (adminPassword.value === ADMIN_PASSWORD) {
+        isAdmin = true;
+        sessionStorage.setItem(ADMIN_FLAG_KEY, 'true');
+        auth.signOut();
+        closeAdmin();
+        updateAuthUI();
+        renderPhotos();
+        if (currentView === 'community') renderPosts();
+      } else {
+        adminError.textContent = 'That password is incorrect.';
+      }
+    }
+
+    /* ---------- profile ---------- */
+    function openProfile() {
+      profileUsername.value = displayName();
+      currentPassword.value = '';
+      newPassword.value = '';
+      passwordMsg.textContent = '';
+      passwordMsg.className = 'msg';
+      passwordSection.style.display = isAdmin ? 'none' : 'block';
+      profileModal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeProfile() {
+      profileModal.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    /* ---------- my posts ---------- */
+    async function loadMyPosts() {
+      const uid = isAdmin ? 'admin' : (currentUser ? currentUser.uid : null);
+      if (!uid) return;
+      myPostsList.innerHTML = `<p class="comment-empty">Loading…</p>`;
+      try {
+        const snapshot = await photosCollection.where('ownerUid', '==', uid)
+          .orderBy('createdAt', 'desc').get();
+        renderMyPosts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      } catch (e) {
+        console.error('Could not load your posts:', e);
+        myPostsList.innerHTML = `<p class="comment-empty">Could not load your posts. Try again.</p>`;
+      }
+    }
+
+    function renderMyPosts(mine) {
+      if (!mine.length) {
+        myPostsList.innerHTML = `<p class="comment-empty">You haven't posted any photos yet.</p>`;
+        return;
+      }
+      myPostsList.innerHTML = mine.map(p => `
+        <div class="my-post-row">
+          <img class="my-post-thumb" src="${escapeHtml(p.image)}" alt="" loading="lazy" />
+          <span class="my-post-title">${escapeHtml(p.title || 'Untitled photo')}</span>
+          <button class="icon-btn icon-btn-quiet" onclick="deleteMyPost('${p.id}')" title="Delete photo" aria-label="Delete photo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+          </button>
+        </div>`).join('');
+    }
+
+    async function deleteMyPost(id) {
+      await deletePhoto(id);
+      loadMyPosts();
+    }
+
+    async function changePassword() {
+      if (!currentUser) return;
+      const current = currentPassword.value;
+      const next = newPassword.value;
+      passwordMsg.className = 'msg error';
+      passwordMsg.textContent = '';
+
+      if (!current || !next) { passwordMsg.textContent = 'Enter your current and new password.'; return; }
+      if (next.length < 6)   { passwordMsg.textContent = 'New password needs at least 6 characters.'; return; }
+
+      const label = passwordBtn.textContent;
+      passwordBtn.textContent = 'Updating…';
+      passwordBtn.disabled = true;
+
+      try {
+        const cred = firebase.auth.EmailAuthProvider.credential(currentUser.email, current);
+        await currentUser.reauthenticateWithCredential(cred);
+        await currentUser.updatePassword(next);
+        passwordMsg.className = 'msg ok';
+        passwordMsg.textContent = 'Password updated.';
+        currentPassword.value = '';
+        newPassword.value = '';
+      } catch (e) {
+        console.error(e);
+        if (['auth/wrong-password','auth/invalid-credential'].includes(e.code)) {
+          passwordMsg.textContent = 'Current password is incorrect.';
+        } else if (e.code === 'auth/weak-password') {
+          passwordMsg.textContent = 'That password is too weak.';
+        } else {
+          passwordMsg.textContent = 'Could not update the password. Try again.';
+        }
+      } finally {
+        passwordBtn.textContent = label;
+        passwordBtn.disabled = false;
+      }
+    }
+
+    /* ==========================================================
+       Views
+       ========================================================== */
+    function switchView(view) {
+      currentView = view;
+      const isBoard = view === 'board';
+      const isCommunity = view === 'community';
+      const isMyPosts = view === 'myposts';
+
+      communityToggle.classList.toggle('active', isCommunity);
+      communityToggle.setAttribute('aria-pressed', String(isCommunity));
+
+      board.style.display      = isBoard ? '' : 'none';
+      sentinel.style.display   = isBoard ? '' : 'none';
+      createFab.style.display  = isBoard ? '' : 'none';
+      communityPage.style.display = isCommunity ? 'block' : 'none';
+      myPostsPage.style.display   = isMyPosts ? 'block' : 'none';
+
+      if (isCommunity) renderPosts();
+      if (isMyPosts) loadMyPosts();
+      window.scrollTo({ top: 0, behavior: 'auto' });
+    }
+
+    function toggleCommunity() {
+      switchView(currentView === 'community' ? 'board' : 'community');
+    }
+
+    function goToMyPosts() {
+      if (!requireLogin()) return;
+      closeProfile();
+      switchView('myposts');
+    }
+
+    /* ==========================================================
+       Add photo
+       ========================================================== */
+    function openPhotoModal() {
+      if (!requireLogin()) return;
+      photoModal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closePhotoModal() {
+      photoModal.classList.remove('open');
+      document.body.style.overflow = '';
+      resetPhotoForm();
+    }
+
+    function resetPhotoForm() {
+      fileInput.value = '';
+      preview.style.display = 'none';
+      preview.src = '';
+      dropText.style.display = 'block';
+      urlInput.value = '';
+      titleInput.value = '';
+      catInput.selectedIndex = 0;
+    }
+
+    function handleFile() {
+      const file = fileInput.files[0];
+      if (!file) return;
+      preview.src = URL.createObjectURL(file);
+      preview.style.display = 'block';
+      dropText.style.display = 'none';
+    }
+
+    // Shrink an image to a base64 string small enough for Firestore's 1MB
+    // document limit. Smaller files also decode far more cheaply on iPad.
+    function compressImage(file, maxDimension = 900, quality = 0.68) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = e => {
+          const img = new Image();
+          img.onload = () => {
+            const encode = (dim, q) => {
+              let { width, height } = img;
+              if (width > height && width > dim) {
+                height = Math.round(height * (dim / width));
+                width = dim;
+              } else if (height > dim) {
+                width = Math.round(width * (dim / height));
+                height = dim;
+              }
+              const canvas = document.createElement('canvas');
+              canvas.width = width;
+              canvas.height = height;
+              canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+              return canvas.toDataURL('image/jpeg', q);
+            };
+
+            const MAX_BYTES = 500 * 1024;
+            let dim = maxDimension, q = quality;
+            let result = encode(dim, q);
+            let attempts = 0;
+
+            while (result.length > MAX_BYTES && attempts < 6) {
+              q = Math.max(0.35, q - 0.12);
+              dim = Math.max(500, Math.round(dim * 0.85));
+              result = encode(dim, q);
+              attempts++;
+            }
+
+            if (result.length > MAX_BYTES) {
+              reject(new Error('That image is too large, even after compressing.'));
+              return;
+            }
+            resolve(result);
+          };
+          img.onerror = () => reject(new Error('That image file could not be read.'));
+          img.src = e.target.result;
+        };
+        reader.onerror = () => reject(new Error('That file could not be read.'));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function savePhoto() {
+      if (!requireLogin()) return;
+      const file = fileInput.files[0];
+      const url = urlInput.value.trim();
+
+      if (!file && !url) {
+        showToast('Choose an image or paste an image link first.', 'error');
+        return;
+      }
+
+      const label = savePhotoBtn.textContent;
+      savePhotoBtn.textContent = 'Preparing…';
+      savePhotoBtn.disabled = true;
+
+      let imageData;
+      try {
+        imageData = file ? await compressImage(file) : url;
+      } catch (e) {
+        console.error(e);
+        showToast((e.message || 'That image could not be processed.') + ' Try a smaller image or an image link.', 'error', 5000);
+        savePhotoBtn.textContent = label;
+        savePhotoBtn.disabled = false;
+        return;
+      }
+
+      const photo = {
+        image: imageData,
+        title: titleInput.value.trim() || 'Untitled photo',
+        category: catInput.value,
+        createdAt: Date.now(),
+        ownerUid: currentUser ? currentUser.uid : (isAdmin ? 'admin' : null),
+        ownerName: displayName() || 'Unknown'
+      };
+
+      savePhotoBtn.textContent = label;
+      savePhotoBtn.disabled = false;
+      closePhotoModal();
+      showToast('Posting photo…');
+
+      try {
+        await photosCollection.add(photo);
+        showToast('Photo posted.', 'ok');
+      } catch (e) {
+        console.error(e);
+        showToast('Could not post the photo. Check your connection and try again.', 'error', 5000);
+      }
+    }
+
+    async function deletePhoto(id, e) {
+      if (e) e.stopPropagation();
+      // The photo being deleted may not be in the board's paginated local
+      // cache (My Posts fetches a user's own photos separately), so only
+      // double-check ownership when we do have it locally.
+      const photo = photos.find(p => p.id === id);
+      if (photo) {
+        const canDelete = isAdmin || (currentUser && photo.ownerUid === currentUser.uid);
+        if (!canDelete) { showToast('You can only delete your own photos.', 'error'); return; }
+      }
+      try {
+        await photosCollection.doc(id).delete();
+        // The live listener only covers the first page, so a photo from an
+        // older, already-fetched page needs to be dropped from the cache by hand.
+        olderPhotos = olderPhotos.filter(p => p.id !== id);
+        rebuildPhotosArray();
+        renderPhotos();
+        showToast('Photo deleted.');
+      } catch (err) {
+        console.error(err);
+        showToast('Could not delete the photo.', 'error');
+      }
+    }
+
+    /* ==========================================================
+       Board rendering — batched
+       ========================================================== */
+    function rebuildPhotosArray() {
+      const seen = new Set(firstPageDocs.map(p => p.id));
+      photos = firstPageDocs.concat(olderPhotos.filter(p => !seen.has(p.id)));
+    }
+
+    function listenForPhotos() {
+      photosCollection.orderBy('createdAt', 'desc').limit(PAGE_SIZE).onSnapshot(snapshot => {
+        const newFirstPage = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        // The live listener can refire at any time (Firestore fires once from
+        // cache and again from the server, and again on any later change to
+        // the first page). Once the user has paged past it, that refire must
+        // NOT touch the pagination cursor — otherwise "load more" would keep
+        // re-fetching the same second page and never reach a third.
+        if (olderPhotos.length === 0) {
+          if (snapshot.docs.length) lastPhotoDoc = snapshot.docs[snapshot.docs.length - 1];
+          hasMorePhotos = snapshot.docs.length === PAGE_SIZE;
+        }
+
+        const previousIds = new Set(firstPageDocs.map(p => p.id));
+        const knownIds = new Set(photos.map(p => p.id));
+        const brandNew = newFirstPage.filter(p => !previousIds.has(p.id) && !knownIds.has(p.id));
+
+        firstPageDocs = newFirstPage;
+        rebuildPhotosArray();
+
+        const firstLoad = !photosLoaded;
+        photosLoaded = true;
+
+        if (firstLoad) {
+          // Only the very first paint does a full rebuild.
+          renderPhotos();
+        } else {
+          visiblePhotos = photos.filter(matchesSearch);
+          // A later refire just for the same content (no genuinely new
+          // photos) leaves the board exactly as the user left it.
+          if (brandNew.length && !currentSearch) prependNewPhotos(brandNew);
+        }
+      }, err => {
+        console.error('Firestore photos listener error:', err);
+        photosLoaded = true;
+        showToast('Could not load photos. Check your connection.', 'error');
+        renderPhotos();
+      });
+    }
+
+    /* ==========================================================
+       Board masonry
+       Positions are computed here instead of via CSS `columns:`.
+       A tile is placed into the shortest column exactly once, as
+       soon as its real aspect ratio is known — after that nothing
+       ever repositions it except an actual window resize (a
+       genuine column-count/width change, not new content loading).
+       ========================================================== */
+    let mCols = 2, mGap = 16, mColWidth = 0, mColHeights = [], mPadLeft = 0, mPadTop = 0;
+    const photoAspect = {}; // photo id -> naturalHeight / naturalWidth, cached across re-renders
+
+    function boardBreakpoint(w) {
+      if (w <= 380) return { cols: 1, gap: 10 };
+      if (w <= 640) return { cols: 2, gap: 10 };
+      if (w < 700)  return { cols: 2, gap: 16 };
+      if (w < 1050) return { cols: 3, gap: 16 };
+      if (w < 1360) return { cols: 4, gap: 16 };
+      return { cols: 5, gap: 16 };
+    }
+
+    function resetMasonry() {
+      const { cols, gap } = boardBreakpoint(window.innerWidth);
+      mCols = cols;
+      mGap = gap;
+      const cs = getComputedStyle(board);
+      mPadLeft = parseFloat(cs.paddingLeft) || 0;
+      mPadTop = parseFloat(cs.paddingTop) || 0;
+      const contentWidth = board.clientWidth - mPadLeft - (parseFloat(cs.paddingRight) || 0);
+      mColWidth = Math.max(0, (contentWidth - gap * (cols - 1)) / cols);
+      mColHeights = new Array(cols).fill(0);
+      board.style.height = '0px';
+    }
+
+    // Drops a tile into whichever column is currently shortest and
+    // grows the board container to fit. This is the only function
+    // that ever assigns a tile's position.
+    function placeTile(el, height) {
+      let idx = 0;
+      for (let i = 1; i < mColHeights.length; i++) {
+        if (mColHeights[i] < mColHeights[idx]) idx = i;
+      }
+      const x = mPadLeft + idx * (mColWidth + mGap);
+      const y = mPadTop + mColHeights[idx];
+      el.dataset.tileHeight = height;
+      el.style.width = mColWidth + 'px';
+      el.style.transform = `translate(${x}px, ${y}px)`;
+      mColHeights[idx] += height + mGap;
+      board.style.height = Math.max(0, mPadTop + Math.max(...mColHeights) - mGap) + 'px';
+    }
+
+    // A tile's rendered height only depends on its aspect ratio and
+    // the current column width — never on how long the image itself
+    // takes to actually decode.
+    function heightForPhoto(id, ratioFallback) {
+      const ratio = photoAspect[id] != null ? photoAspect[id] : ratioFallback;
+      const h = mColWidth * ratio;
+      return Math.max(120, Math.min(h, mColWidth * 2.4));
+    }
+
+    // Recomputes every current tile's position from its already-known
+    // height — used only on an actual viewport width change, never
+    // while photos are still loading in.
+    function relayoutBoard() {
+      const tiles = Array.from(board.children);
+      resetMasonry();
+      tiles.forEach(el => {
+        const h = (el.classList.contains('photo') && photoAspect[el.dataset.id] != null)
+          ? heightForPhoto(el.dataset.id, 1)
+          : (parseFloat(el.dataset.tileHeight) || 200);
+        placeTile(el, h);
+      });
+    }
+
+    let resizeTimer = null;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        if (currentView === 'board' && board.children.length && !board.querySelector('.empty')) {
+          relayoutBoard();
+        }
+      }, 150);
+    });
+
+    function matchesSearch(p) {
+      if (!currentSearch) return true;
+      return (p.title || '').toLowerCase().includes(currentSearch) ||
+             (p.category || '').toLowerCase().includes(currentSearch);
+    }
+
+    function buildPhotoFigure(p) {
+      const title = escapeHtml(p.title || 'Untitled photo');
+      const owner = escapeHtml(p.ownerName || 'Unknown');
+      const figure = document.createElement('figure');
+      figure.className = 'photo';
+      figure.dataset.title = title;
+      figure.dataset.owner = owner;
+      figure.dataset.id = p.id;
+      figure.dataset.src = p.image;
+      figure.onclick = () => { if (!figure.classList.contains('is-broken')) openLightbox(figure); };
+      figure.innerHTML = `
+        <img alt="${title}" decoding="async" />
+        <div class="photo-veil"></div>
+        <div class="broken">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+          <span>This photo didn't load</span>
+          <button onclick="retryPhoto(this, event)">Try again</button>
+        </div>
+        <figcaption class="photo-caption">${title}</figcaption>`;
+      return figure;
+    }
+
+    // Preloads the image off-DOM so its real aspect ratio is known
+    // *before* the tile is placed — that's what lets it be positioned
+    // once, correctly, instead of shifting after the fact.
+    function loadPhotoInto(figure, p, isRetry) {
+      const probe = new Image();
+      probe.decoding = 'async';
+      probe.onload = () => {
+        photoAspect[p.id] = (probe.naturalHeight / probe.naturalWidth) || 1;
+        placeTile(figure, heightForPhoto(p.id, 1));
+        const img = figure.querySelector('img');
+        img.src = p.image; // already decoded/cached by the probe — paints instantly
+        img.onload = () => img.classList.add('loaded');
+        requestAnimationFrame(() => {
+          if (img.complete && img.naturalWidth > 0) img.classList.add('loaded');
+          figure.classList.add('in');
+        });
+      };
+      probe.onerror = () => {
+        // Safari sometimes reports a decode failure under memory
+        // pressure even though the data is fine — one silent retry
+        // before actually giving up.
+        if (!isRetry) { setTimeout(() => loadPhotoInto(figure, p, true), 400); return; }
+        placeTile(figure, heightForPhoto(p.id, 1));
+        figure.classList.add('is-broken');
+        requestAnimationFrame(() => figure.classList.add('in'));
+      };
+      probe.src = p.image;
+    }
+
+    function mountPhoto(p) {
+      const figure = buildPhotoFigure(p);
+      board.appendChild(figure);
+      loadPhotoInto(figure, p, false);
+      return figure;
+    }
+
+    function renderSkeletons() {
+      resetMasonry();
+      board.innerHTML = '';
+      const heights = [230, 300, 180, 260, 320, 200, 240, 280, 210, 250, 190, 290];
+      heights.forEach((h, i) => {
+        const el = document.createElement('div');
+        el.className = 'skeleton';
+        el.style.animationDelay = `${(i % 6) * 0.08}s`;
+        board.appendChild(el);
+        placeTile(el, h);
+      });
+    }
+
+    function renderPhotos() {
+      visiblePhotos = photos.filter(matchesSearch);
+      shownCount = 0;
+
+      if (!photosLoaded) { renderSkeletons(); return; }
+
+      resetMasonry();
+      board.innerHTML = '';
+
+      if (!visiblePhotos.length) {
+        board.style.height = '';
+        board.innerHTML = `
+          <div class="empty">
+            <h3>${currentSearch ? 'Nothing matches that' : 'The board is empty'}</h3>
+            <p>${currentSearch
+              ? 'Try a different word.'
+              : 'Add the first photo — upload a file or paste an image link.'}</p>
+          </div>`;
+        return;
+      }
+
+      appendBatch();
+    }
+
+    function appendBatch() {
+      if (shownCount >= visiblePhotos.length) return;
+      const next = visiblePhotos.slice(shownCount, shownCount + BATCH_SIZE);
+      next.forEach(mountPhoto);
+      shownCount += next.length;
+    }
+
+    // Insert newly-posted photos at the very top. Anything already on
+    // screen keeps the aspect ratio it already measured, so this only
+    // re-fetches pixels for the genuinely new photos — everything else
+    // just gets repositioned lower using cached measurements.
+    function prependNewPhotos(newPhotos) {
+      const existingIds = new Set(visiblePhotos.map(p => p.id));
+      const fresh = newPhotos.filter(p => !existingIds.has(p.id));
+      if (!fresh.length) return;
+      visiblePhotos = fresh.concat(visiblePhotos);
+      shownCount += fresh.length;
+      resetMasonry();
+      board.innerHTML = '';
+      visiblePhotos.slice(0, shownCount).forEach(mountPhoto);
+    }
+
+    // Fetches the next page of older photos. Not real-time (that would mean
+    // one listener per page) — a plain one-time read, appended locally.
+    async function loadMorePhotos() {
+      if (loadingMorePhotos || !hasMorePhotos || !lastPhotoDoc) return;
+      loadingMorePhotos = true;
+      try {
+        const snapshot = await photosCollection.orderBy('createdAt', 'desc')
+          .startAfter(lastPhotoDoc).limit(PAGE_SIZE).get();
+        if (snapshot.empty) { hasMorePhotos = false; return; }
+        const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        olderPhotos = olderPhotos.concat(docs);
+        lastPhotoDoc = snapshot.docs[snapshot.docs.length - 1];
+        if (snapshot.docs.length < PAGE_SIZE) hasMorePhotos = false;
+        rebuildPhotosArray();
+        // Only extend the filtered list and append the new tail — a full
+        // renderPhotos() would wipe and re-decode everything already on screen.
+        visiblePhotos = photos.filter(matchesSearch);
+        appendBatch();
+      } catch (e) {
+        console.error('Could not load more photos:', e);
+      } finally {
+        loadingMorePhotos = false;
+      }
+    }
+
+    // Reveal more of what's already loaded; once that runs out, fetch the
+    // next network page (search only filters what's been fetched so far,
+    // so pagination pauses while a search term is active).
+    function loadNextChunk() {
+      if (shownCount < visiblePhotos.length) { appendBatch(); return; }
+      if (!currentSearch && hasMorePhotos) loadMorePhotos();
+    }
+
+    function watchSentinel() {
+      if (!('IntersectionObserver' in window)) {
+        window.addEventListener('scroll', () => {
+          if (currentView !== 'board') return;
+          if (window.innerHeight + window.scrollY > document.body.offsetHeight - 600) loadNextChunk();
+        }, { passive: true });
+        return;
+      }
+      new IntersectionObserver(entries => {
+        if (entries.some(e => e.isIntersecting) && currentView === 'board') loadNextChunk();
+      }, { rootMargin: '600px 0px' }).observe(sentinel);
+    }
+
+    function retryPhoto(btn, e) {
+      e.stopPropagation();
+      const figure = btn.closest('.photo');
+      figure.classList.remove('is-broken');
+      loadPhotoInto(figure, { id: figure.dataset.id, image: figure.dataset.src }, false);
+    }
+
+    function openLightbox(figure) {
+      const src = figure.dataset.src;
+      if (!src) return;
+      lightboxImg.src = src;
+      lightboxTitle.textContent = figure.dataset.title || 'Untitled photo';
+      lightboxBy.textContent = figure.dataset.owner ? `Posted by ${figure.dataset.owner}` : '';
+      lightbox.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+      lightbox.classList.remove('open');
+      setTimeout(() => { lightboxImg.src = ''; }, 200);
+      document.body.style.overflow = '';
+    }
+
+    /* ==========================================================
+       Community
+       ========================================================== */
+    function updateComposerState() {
+      const len = postInput.value.trim().length;
+      postBtn.disabled = len === 0;
+      charCount.textContent = len > 450 ? `${600 - postInput.value.length} left` : '';
+      charCount.classList.toggle('over', postInput.value.length >= 600);
+    }
+
+    async function createPost() {
+      if (!requireLogin()) return;
+      const desc = postInput.value.trim();
+      if (!desc) return;
+
+      const label = postBtn.textContent;
+      postBtn.textContent = 'Posting…';
+      postBtn.disabled = true;
+
+      try {
+        await postsCollection.add({
+          desc,
+          createdAt: Date.now(),
+          ownerUid: currentUser ? currentUser.uid : (isAdmin ? 'admin' : null),
+          ownerName: displayName() || 'Unknown'
+        });
+        postInput.value = '';
+        postInput.style.height = 'auto';
+      } catch (e) {
+        console.error(e);
+        showToast('Could not post that. Try again.', 'error');
+      } finally {
+        postBtn.textContent = label;
+        updateComposerState();
+      }
+    }
+
+    async function deletePost(id, e) {
+      e.stopPropagation();
+      const post = posts.find(r => r.id === id);
+      if (!post) return;
+      const canDelete = isAdmin || (currentUser && post.ownerUid === currentUser.uid);
+      if (!canDelete) { showToast('You can only delete your own posts.', 'error'); return; }
+      try {
+        await postsCollection.doc(id).delete();
+        if (commentUnsubs[id]) { commentUnsubs[id](); delete commentUnsubs[id]; }
+        delete commentsCache[id];
+        openComments.delete(id);
+      } catch (err) {
+        console.error(err);
+        showToast('Could not delete that post.', 'error');
+      }
+    }
+
+    function listenForPosts() {
+      postsCollection.orderBy('createdAt', 'desc').onSnapshot(snapshot => {
+        posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        if (currentView === 'community') renderPosts();
+      }, err => console.error('Firestore posts listener error:', err));
+    }
+
+    function timeAgo(ts) {
+      const mins = Math.floor(Math.max(0, Date.now() - ts) / 60000);
+      if (mins < 1) return 'just now';
+      if (mins < 60) return `${mins}m ago`;
+      const hrs = Math.floor(mins / 60);
+      if (hrs < 24) return `${hrs}h ago`;
+      const days = Math.floor(hrs / 24);
+      if (days < 30) return `${days}d ago`;
+      return new Date(ts).toLocaleDateString();
+    }
+
+    function postMarkup(r, drafts) {
+      const canDelete = isAdmin || (currentUser && r.ownerUid === currentUser.uid);
+      const name = escapeHtml(r.ownerName || 'Unknown');
+      const isOpen = openComments.has(r.id);
+      const comments = commentsCache[r.id] || [];
+      const draft = (drafts && drafts[r.id]) || '';
+
+      const deleteBtn = canDelete
+        ? `<button class="icon-btn icon-btn-quiet" onclick="deletePost('${r.id}', event)" title="Delete post" aria-label="Delete post"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button>`
+        : '';
+
+      return `
+      <article class="post">
+        <span class="avatar avatar-lg">${AVATAR_ICON}</span>
+        <div>
+          <div class="post-head">
+            <span class="post-author">${name}</span>
+            <span class="dot">&bull;</span>
+            <span class="post-time">${timeAgo(r.createdAt)}</span>
+            <span class="spacer"></span>
+            ${deleteBtn}
+          </div>
+          <p class="post-body">${escapeHtml(r.desc)}</p>
+          <div class="post-foot">
+            <button class="action ${isOpen ? 'on' : ''}" onclick="toggleComments('${r.id}')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+              <span id="commentCount-${r.id}">${comments.length || 'Reply'}</span>
+            </button>
+          </div>
+          <div class="comments" id="comments-${r.id}" style="display:${isOpen ? 'block' : 'none'};">
+            <div class="comment-list" id="commentsList-${r.id}">${renderComments(comments)}</div>
+            <div class="comment-form">
+              <input type="text" id="commentInput-${r.id}" value="${escapeHtml(draft)}" placeholder="Write a reply" maxlength="300"
+                     onkeydown="if(event.key==='Enter'){ postComment('${r.id}'); }" />
+              <button class="btn btn-quiet btn-sm" onclick="postComment('${r.id}')">Reply</button>
+            </div>
+          </div>
+        </div>
+      </article>`;
+    }
+
+    function renderPosts() {
+      // keep any half-written comment before wiping the DOM
+      const drafts = {};
+      postsList.querySelectorAll('[id^="commentInput-"]').forEach(el => {
+        const id = el.id.replace('commentInput-', '');
+        if (el.value) drafts[id] = el.value;
+      });
+
+      shownPostsCount = 0;
+      postsList.innerHTML = '';
+
+      if (!posts.length) {
+        postsList.innerHTML = `
+          <div class="empty">
+            <h3>No posts yet</h3>
+            <p>Start the conversation — ask for a photo, or just say hello.</p>
+          </div>`;
+        return;
+      }
+
+      appendPostsBatch(drafts);
+    }
+
+    function appendPostsBatch(drafts) {
+      if (shownPostsCount >= posts.length) return;
+      const next = posts.slice(shownPostsCount, shownPostsCount + POSTS_BATCH_SIZE);
+      postsList.insertAdjacentHTML('beforeend', next.map(r => postMarkup(r, drafts)).join(''));
+      shownPostsCount += next.length;
+      // Subscribing here (not just on click) is what keeps the reply count
+      // accurate from the moment a post appears, instead of only after it's opened.
+      next.forEach(r => subscribeToComments(r.id));
+    }
+
+    function watchPostsSentinel() {
+      if (!('IntersectionObserver' in window)) {
+        window.addEventListener('scroll', () => {
+          if (currentView !== 'community') return;
+          if (window.innerHeight + window.scrollY > document.body.offsetHeight - 600) appendPostsBatch();
+        }, { passive: true });
+        return;
+      }
+      new IntersectionObserver(entries => {
+        if (entries.some(e => e.isIntersecting) && currentView === 'community') appendPostsBatch();
+      }, { rootMargin: '600px 0px' }).observe(postsSentinel);
+    }
+
+    function renderComments(comments) {
+      if (!comments.length) return `<p class="comment-empty">No replies yet.</p>`;
+      return comments.map(c => `
+        <div class="comment">
+          <span class="avatar avatar-sm">${AVATAR_ICON}</span>
+          <p class="comment-body">
+            <span class="comment-author">${escapeHtml(c.ownerName || 'Unknown')}</span><span class="comment-text">${escapeHtml(c.text)}</span>
+          </p>
+        </div>`).join('');
+    }
+
+    function toggleComments(postId) {
+      const section = document.getElementById(`comments-${postId}`);
+      if (!section) return;
+      if (!openComments.has(postId)) {
+        openComments.add(postId);
+        section.style.display = 'block';
+        subscribeToComments(postId);
+      } else {
+        openComments.delete(postId);
+        section.style.display = 'none';
+      }
+      const btn = section.parentElement.querySelector('.action');
+      if (btn) btn.classList.toggle('on', openComments.has(postId));
+    }
+
+    function subscribeToComments(postId) {
+      if (commentUnsubs[postId]) return;
+      commentUnsubs[postId] = postsCollection.doc(postId).collection('comments')
+        .orderBy('createdAt', 'asc')
+        .onSnapshot(snapshot => {
+          commentsCache[postId] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          const listEl = document.getElementById(`commentsList-${postId}`);
+          if (listEl) listEl.innerHTML = renderComments(commentsCache[postId]);
+          const countEl = document.getElementById(`commentCount-${postId}`);
+          if (countEl) countEl.textContent = commentsCache[postId].length || 'Reply';
+        }, err => console.error('comments listener error', err));
+    }
+
+    async function postComment(postId) {
+      if (!requireLogin()) return;
+      const input = document.getElementById(`commentInput-${postId}`);
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = '';
+      try {
+        await postsCollection.doc(postId).collection('comments').add({
+          text,
+          createdAt: Date.now(),
+          ownerUid: currentUser ? currentUser.uid : (isAdmin ? 'admin' : null),
+          ownerName: displayName() || 'Unknown'
+        });
+      } catch (e) {
+        console.error(e);
+        showToast('Could not post that reply.', 'error');
+      }
+    }
+
+    /* ==========================================================
+       Toasts + helpers
+       ========================================================== */
+    const toasts = $('toasts');
+
+    function showToast(message, type = '', duration = 3200) {
+      if (!toasts) return;
+      const el = document.createElement('div');
+      el.className = `toast${type ? ' ' + type : ''}`;
+      el.textContent = message;
+      toasts.appendChild(el);
+      setTimeout(() => {
+        el.classList.add('leaving');
+        setTimeout(() => el.remove(), 220);
+      }, duration);
+    }
+
+    function escapeHtml(text) {
+      if (text === null || text === undefined) return '';
+      const div = document.createElement('div');
+      div.textContent = String(text);
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>
